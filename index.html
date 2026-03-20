@@ -145,29 +145,54 @@ function addNewMenuDropdown(){
 
 // PRINT NOTA
 function printNota(order){
-  let now=new Date(); let datetime=now.toLocaleString();
-  let orderItems=[], total=0, tableNo="", displayTable="";
-  if(order){
-    tableNo=order.table;
-    orderItems=order.items;
-    total=order.total;
-    displayTable = /^\d+$/.test(tableNo)? "ID Pesanan: "+tableNo : (tableNo? "Nama Pelanggan: "+tableNo:"");
-  } else {
-    tableNo=document.getElementById("tableNo").value;
-    displayTable = /^\d+$/.test(tableNo)? "ID Pesanan: "+tableNo : (tableNo? "Nama Pelanggan: "+tableNo:"");
-    menu.forEach(m=>{ if(m.qty>0){ orderItems.push({name:m.name, qty:m.qty, price:m.price}); total+=m.qty*m.price; }});
-    if(orderItems.length>0){ history.push({table:tableNo, datetime:datetime, items:orderItems, total:total}); saveHistory(); resetCart(); }
-  }
-  let text=`<h2 style="text-align:center;">Kantin Kampus 2 Mutu</h2>
-  <p style="text-align:center; font-size:12px; margin-top:-10px;">SMK Muhammadiyah 1 Prambon</p>
-  <hr>`;
-  orderItems.forEach(it=>{
-    text+=`${it.name.padEnd(20," ")} x${it.qty} = Rp ${formatRp(it.qty*it.price)}<br>`;
-  });
-  text+=`<hr><h3>Total: Rp ${formatRp(total)}</h3>`;
-  let w=window.open('','Nota','width=400,height=600'); w.document.write(text); w.document.close(); w.print();
-}
+  let now = new Date();
+  let datetime = now.toLocaleString(); // tanggal + jam
+  let orderItems = [], total = 0, tableNo = "", displayTable = "";
 
+  if(order){
+    // cetak ulang dari history
+    tableNo = order.table;
+    orderItems = order.items;
+    total = order.total;
+    displayTable = /^\d+$/.test(tableNo) ? "ID Pesanan: " + tableNo : (tableNo ? "Nama Pelanggan: " + tableNo : "");
+  } else {
+    // cetak baru
+    tableNo = document.getElementById("tableNo").value;
+    displayTable = /^\d+$/.test(tableNo) ? "ID Pesanan: " + tableNo : (tableNo ? "Nama Pelanggan: " + tableNo : "");
+    menu.forEach(m => { if(m.qty>0){ orderItems.push({name:m.name, qty:m.qty, price:m.price}); total+=m.qty*m.price; }});
+    if(orderItems.length>0){ 
+      history.push({table:tableNo, datetime:datetime, items:orderItems, total:total}); 
+      localStorage.setItem("history", JSON.stringify(history));
+      menu.forEach(m=>m.qty=0); // reset qty
+      localStorage.setItem("menu", JSON.stringify(menu));
+    }
+  }
+
+  // MULAI FORMAT NOTA
+  let text = `
+<h2 style="text-align:center; margin-bottom:0;">Kantin Kampus 2 Mutu</h2>
+<p style="text-align:center; font-size:12px; margin-top:0;">SMK Muhammadiyah 1 Prambon</p>
+<p style="text-align:center; font-size:12px; margin-top:0;">${datetime}</p>
+${displayTable ? `<p style="text-align:center; font-size:12px; margin-top:0;">${displayTable}</p>` : ""}
+<hr>
+`;
+
+  // DETAIL ITEM
+  orderItems.forEach(it=>{
+    // padEnd untuk lurusin Qtt = Total
+    let namePadding = it.name.padEnd(25," ");
+    let qtyPrice = `x${it.qty} = Rp ${formatRp(it.qty*it.price)}`;
+    text += `${namePadding} ${qtyPrice}<br>`;
+  });
+
+  text += `<hr><h3 style="text-align:right;">Total: Rp ${formatRp(total)}</h3>`;
+
+  // Buka jendela print
+  let w = window.open('', 'Nota', 'width=400,height=600');
+  w.document.write(text);
+  w.document.close();
+  w.print();
+}
 // RIWAYAT
 function showHistory(){
   const el=document.getElementById("historyList");
