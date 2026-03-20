@@ -158,7 +158,9 @@ function printNota(order){
     menu.forEach(m=>{ if(m.qty>0){ orderItems.push({name:m.name, qty:m.qty, price:m.price}); total+=m.qty*m.price; }});
     if(orderItems.length>0){ history.push({table:tableNo, datetime:datetime, items:orderItems, total:total}); saveHistory(); resetCart(); }
   }
-  let text=`<h2>Kantin Kampus 2 Mutu</h2><p style="font-size:12px; margin-top:-10px;">SMK Muhammadiyah 1 Prambon</p><hr>`;
+  let text=`<h2 style="text-align:center;">Kantin Kampus 2 Mutu</h2>
+  <p style="text-align:center; font-size:12px; margin-top:-10px;">SMK Muhammadiyah 1 Prambon</p>
+  <hr>`;
   orderItems.forEach(it=>{
     text+=`${it.name.padEnd(20," ")} x${it.qty} = Rp ${formatRp(it.qty*it.price)}<br>`;
   });
