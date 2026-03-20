@@ -1,1 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Kantin Kasir</title>
+<style>
+body { font-family: Arial; margin:0; padding:10px; background:#f5f5f5; }
+.header { display:flex; justify-content:space-between; align-items:center; }
+.gear { font-size:22px; cursor:pointer; }
+.menu { background:white; margin:10px 0; padding:10px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; }
+.menu div.left { display:flex; align-items:center; }
+.menu span.qty { margin:0 10px; min-width:20px; display:inline-block; text-align:center; }
+button { padding:5px 8px; margin:0 2px; }
+.footer { position:fixed; bottom:0; left:0; right:0; background:white; padding:10px; box-shadow:0 -2px 5px rgba(0,0,0,0.1); }
+.hidden { display:none; }
+input.edit-input { width:100px; margin-left:5px; }
+#menuList { max-height: calc(100vh - 180px); overflow-y:auto; }
+#historyList { max-height:300px; overflow-y:auto; background:#fff; padding:10px; border-radius:10px; margin-top:10px; }
+</style>
+</head>
+<body>
 
+<div class="header">
+  <h3>Kantin Kasir</h3>
+  <div class="gear" onclick="toggleEdit()">⚙️</div>
+</div>
+
+<div id="menuList"></div>
+
+<div class="footer">
+  <input type="text" id="tableNo" placeholder="Nomor Meja" style="width:80px;">
+  <h3>Total: Rp <span id="total">0</span></h3>
+  <button onclick="printNota()">Print Nota</button>
+  <button onclick="resetCart()">Reset</button>
+  <button onclick="showHistory()">Riwayat Pesanan</button>
+</div>
+
+<div id="historyList" class="hidden"></div>
+
+<script>
+// MENU
+let menu = JSON.parse(localStorage.getItem("menu")) || [
+  {name:"Es Teh", price:3000, qty:0},
+  {name:"Air Mineral", price:3000, qty:0},
+  {name:"Gorengan", price:2000, qty:0},
+  {name:"Pop Ice", price:4000, qty:0},
+  {name:"Es Jeruk", price:4000, qty:0}
+];
+
+// RIWAYAT
+let history = JSON.parse(localStorage.getItem("history")) || [];
+
+let editMode = false;
+
+function saveMenu(){ localStorage.setItem("menu", JSON.stringify(menu)); }
+function saveHistory(){ localStorage.setItem("history", JSON.stringify(history)); }
+
+// RENDER MENU
+function renderMenu(){
+  let html = "";
+  menu.forEach((m,i)=>{
+    html += `<div class="menu">
+      <div class="left">
+        <b>${m.name}</b> - Rp ${m.price} 
+        ${editMode ? `<span class="edit-pen" onclick="enableEdit(${i})">✏️</span>` : ''}
+      </div>
+      <div>
+        <button onclick="minus(${i})">-</button>
+        <span class="qty">${m.qty}</span>
+        <button onclick="add(${i})">+</button>
+      </div>
+    </div>`;
+  });
+  if(editMode){
+    html += `<div style="margin-top:10px;">
+      <button onclick="addNewMenuPrompt()">Tambah Menu</button>
+    </div>`;
+  }
+  document.getElementById("menuList").innerHTML = html;
+  hitungTotal();
+}
+
+// OPERASI MENU
+function add(i){ menu[i].qty++; saveMenu(); renderMenu(); }
+function minus(i){ if(menu[i].qty>0) menu[i].qty--; saveMenu(); renderMenu(); }
+function hitungTotal(){ 
+  let total=0; menu.forEach(m=>total+=m.qty*m.price); 
+  document.getElementById("total").innerText = total; 
+}
+function resetCart(){ menu.forEach(m=>m.qty=0); saveMenu(); renderMenu(); }
+
+// EDIT & TAMBAH MENU
+function toggleEdit(){ editMode=!editMode; renderMenu(); }
+function enableEdit(i){
+  let newName=prompt("Nama Menu:",menu[i].name); if(newName) menu[i].name=newName;
+  let newPrice=prompt("Harga:",menu[i].price); if(newPrice) menu[i].price=parseInt(newPrice);
+  saveMenu(); renderMenu();
+}
+function addNewMenuPrompt(){
+  let name = prompt("Nama Menu Baru:"); if(!name) return;
+  let price = prompt("Harga Menu Baru:"); if(!price) return;
+  menu.push({name:name, price:parseInt(price), qty:0});
+  saveMenu(); renderMenu();
+}
+
+// PRINT NOTA & SIMPAN RIWAYAT
+function printNota(){
+  let tableNo = document.getElementById("tableNo").value || "-";
+  let now = new Date();
+  let datetime = now.toLocaleString();
+  let text = `<h2>NOTA KANTIN</h2>`;
+  text += `<p>Meja: ${tableNo}</p><p>Waktu: ${datetime}</p><hr>`;
+  let orderItems = [];
+  menu.forEach(m=>{
+    if(m.qty>0){
+      text += `<p>${m.name} x${m.qty} = Rp ${m.qty*m.price}</p>`;
+      orderItems.push({name:m.name, qty:m.qty, price:m.price});
+    }
+  });
+  let total = menu.reduce((sum,m)=>sum + m.qty*m.price,0);
+  text += `<hr><h3>Total: Rp ${total}</h3>`;
+  
+  // SIMPAN KE RIWAYAT
+  if(orderItems.length>0){
+    history.push({table:tableNo, datetime:datetime, items:orderItems, total:total});
+    saveHistory();
+  }
+  
+  let w = window.open('','Nota','width=400,height=600'); 
+  w.document.write(text); 
+  w.document.close(); 
+  w.print();
+  resetCart();
+}
+
+// TOMBOL RIWAYAT
+function showHistory(){
+  const el = document.getElementById("historyList");
+  if(el.classList.contains("hidden")){ 
+    el.classList.remove("hidden");
+    let html = "<h3>Riwayat Pesanan</h3>";
+    history.forEach((h,i)=>{
+      html += `<p>${i+1}. Meja ${h.table} | ${h.datetime} | Total: Rp ${h.total}</p>`;
+      h.items.forEach(it=>{
+        html += `<p style="margin-left:15px;">${it.name} x${it.qty} = Rp ${it.qty*it.price}</p>`;
+      });
+      html += "<hr>";
+    });
+    el.innerHTML = html;
+  } else {
+    el.classList.add("hidden");
+  }
+}
+
+renderMenu();
+</script>
+</body>
+</html>
