@@ -134,19 +134,24 @@ async function printNota(reData = null) {
     let orderID, itemsTxt, total, printLines;
     
     if (reData) {
+        // --- JIKA RE-PRINT (TANPA LOADING CLOUD) ---
         orderID = reData.table; 
         itemsTxt = reData.items; 
         total = parseInt(reData.total);
         printLines = itemsTxt.split(", ");
     } else {
+        // --- JIKA PESANAN BARU ---
         const ordered = menu.filter(m => m.qty > 0);
         if (ordered.length === 0) return alert("Pilih menu dulu!");
         
-        toggleLoading(true);
+        toggleLoading(true); // TAMPILKAN LOADING
+
         try {
+            // 1. Ambil nomor urut
             const resNum = await fetch(SCRIPT_URL + "?action=getNextOrderNumber");
             const nextNum = await resNum.text();
             
+            // 2. Generate Order ID (KMU2 + YY + M + D + 000X)
             const now = new Date();
             const yy = now.getFullYear().toString().slice(-2);
             const m = now.getMonth() + 1;
@@ -156,44 +161,57 @@ async function printNota(reData = null) {
 
             total = ordered.reduce((s, m) => s + (m.qty * m.price), 0);
             itemsTxt = ordered.map(it => `${it.name} (${it.qty})`).join(", ");
-            printLines = ordered.map(it => `${it.name} x${it.qty} = Rp ${(it.qty*it.price).toLocaleString()}`);
+            printLines = ordered.map(it => `${it.name} x${it.qty}`);
             
+            // 3. Simpan ke Google Sheet
             await fetch(SCRIPT_URL, { 
                 method: "POST", 
                 body: JSON.stringify({ action: "saveOrder", table: orderID, datetime: new Date().toLocaleString("id-ID"), items: itemsTxt, total: total }) 
             });
+
+            // --- PENTING: MATIKAN LOADING SEBELUM PRINT ---
+            toggleLoading(false); 
+
         } catch (e) {
-            alert("Gagal memproses ke Cloud!");
-            toggleLoading(false);
+            toggleLoading(false); // MATIKAN LOADING JIKA ERROR
+            alert("Gagal koneksi Cloud!");
             return;
         }
-        toggleLoading(false);
     }
 
-    const p = window.open('', '', 'width=350,height=600');
-    p.document.write(`
-        <style>body{font-family:monospace;font-size:12px;padding:20px} .center{text-align:center} .flex{display:flex;justify-content:space-between}</style>
-        <div class="center">
-            <b style="font-size:14px">KANTIN KAMPUS 2 MUTU</b><br>
-            SMK Muhammadiyah 1 Prambon<br>
-            ---------------------------<br>
-            <b>NO: ${orderID}</b><br>
-            ${new Date().toLocaleString("id-ID")}<br>
-            ---------------------------
-        </div>
-    `);
-    printLines.forEach(l => p.document.write(`<div class="flex"><span>${l}</span></div>`));
-    p.document.write(`
-        <div class="center">
-            ---------------------------<br>
-            <div class="flex"><b>TOTAL</b> <b>Rp ${total.toLocaleString()}</b></div>
-            ---------------------------<br>
-            LUNAS<br><br>
-            Selamat Menikmati!
-        </div>
-    `);
-    p.document.close();
-    setTimeout(() => { p.print(); p.close(); if(!reData) resetCart(); }, 500);
+    // --- PROSES CETAK (DI LUAR BLOK LOADING) ---
+    // Kasih jeda 300ms biar browser bener-bener bersih dari overlay loading
+    setTimeout(() => {
+        const p = window.open('', '', 'width=350,height=600');
+        p.document.write(`
+            <style>body{font-family:monospace;font-size:12px;padding:20px} .center{text-align:center} .flex{display:flex;justify-content:space-between}</style>
+            <div class="center">
+                <b style="font-size:14px">KANTIN KAMPUS 2 MUTU</b><br>
+                SMK Muhammadiyah 1 Prambon<br>
+                ---------------------------<br>
+                <b>NO: ${orderID}</b><br>
+                ${new Date().toLocaleString("id-ID")}<br>
+                ---------------------------
+            </div>
+        `);
+        printLines.forEach(l => p.document.write(`<div class="flex"><span>${l}</span></div>`));
+        p.document.write(`
+            <div class="center">
+                ---------------------------<br>
+                <div class="flex"><b>TOTAL</b> <b>Rp ${total.toLocaleString()}</b></div>
+                ---------------------------<br>
+                LUNAS<br><br>
+                Selamat Menikmati!
+            </div>
+        `);
+        p.document.close();
+        
+        // Eksekusi Print
+        p.print();
+        p.close();
+        
+        if(!reData) resetCart();
+    }, 300);
 }
 
 async function showHistory() {
