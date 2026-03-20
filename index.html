@@ -4,48 +4,40 @@
 <meta charset="UTF-8">
 <title>Kantin Kampus 2 Mutu</title>
 <style>
-/* GENERAL STYLING */
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; padding:0; background:#f0f2f5; }
-.header { text-align:center; font-size:28px; font-weight:bold; margin:15px 0; color:#2c3e50; letter-spacing:1px; animation:fadeInDown 1s; }
-.gear { font-size:26px; cursor:pointer; position:absolute; top:15px; right:20px; color:#34495e; transition:0.3s; }
-.gear:hover { transform:rotate(20deg); color:#1abc9c; }
-#menuList { max-height: calc(100vh - 250px); overflow-y:auto; padding:0 10px; }
-h4.category { margin:15px 0 5px 0; font-size:20px; color:#34495e; border-bottom:2px solid #1abc9c; padding-bottom:3px; animation:fadeIn 0.5s; }
-
-/* MENU CARD */
-.menu { background:white; margin:8px 0; padding:12px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; }
-.menu:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(0,0,0,0.15); }
-.menu div.left { display:flex; align-items:center; }
-.menu span.qty { margin:0 10px; min-width:22px; text-align:center; font-weight:bold; color:#2c3e50; }
-.menu span.price { margin-left:5px; color:#7f8c8d; font-size:14px; }
-.button-small { padding:6px 10px; margin:0 2px; border:none; border-radius:6px; cursor:pointer; background:#1abc9c; color:white; transition:0.2s; }
-.button-small:hover { background:#16a085; transform:scale(1.1); }
-.delete-icon { cursor:pointer; color:red; margin-right:6px; transition:0.2s; }
-.delete-icon:hover { transform:scale(1.2); }
-input, select { padding:6px 8px; border-radius:6px; border:1px solid #bdc3c7; margin-right:6px; outline:none; }
-
-/* FOOTER FLOATING */
-.footer { position:fixed; bottom:0; left:0; right:0; background:white; padding:15px 10px; box-shadow:0 -3px 10px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center; animation:fadeInUp 1s; border-top:2px solid #1abc9c; }
-.footer h3 { margin:0; color:#2c3e50; }
-
-/* HISTORY POPUP */
-#historyList { position:fixed; top:70px; left:10%; width:80%; max-height:70%; overflow-y:auto; background:white; border-radius:12px; padding:15px; box-shadow:0 5px 20px rgba(0,0,0,0.2); display:none; z-index:1000; animation:fadeIn 0.5s; }
-#historyList .closeBtn { position:absolute; top:10px; right:10px; cursor:pointer; font-weight:bold; font-size:18px; background:red; color:white; border:none; border-radius:50%; width:28px; height:28px; }
-#historyList button.printHistory { padding:4px 6px; font-size:12px; margin-left:5px; cursor:pointer; border:none; border-radius:6px; background:#1abc9c; color:white; }
-#historyList button.printHistory:hover { background:#16a085; transform:scale(1.1); }
-
-/* ANIMATIONS */
-@keyframes fadeInDown { from {opacity:0; transform:translateY(-20px);} to {opacity:1; transform:translateY(0);} }
-@keyframes fadeInUp { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
-@keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+body{font-family:'Segoe UI',sans-serif;margin:0;padding:0;background:#f0f2f5;}
+.header{text-align:center;font-size:28px;font-weight:bold;margin:15px 0;color:#2c3e50;letter-spacing:1px;}
+.gear{font-size:26px;cursor:pointer;position:absolute;top:15px;right:20px;color:#34495e;transition:.3s;}
+.gear:hover{transform:rotate(20deg);color:#1abc9c;}
+.menu-list{max-height:calc(100vh-250px);overflow-y:auto;padding:0 10px;}
+h4.category{margin:15px 0 5px 0;font-size:20px;color:#34495e;border-bottom:2px solid #1abc9c;padding-bottom:3px;}
+.menu{background:white;margin:8px 0;padding:12px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 5px rgba(0,0,0,.1);transition:transform .2s,box-shadow .2s;}
+.menu:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,0,0,.15);}
+.menu div.left{display:flex;align-items:center;}
+.menu span.qty{margin:0 10px;min-width:22px;text-align:center;font-weight:bold;color:#2c3e50;}
+.menu span.price{margin-left:5px;color:#7f8c8d;font-size:14px;}
+.button-small{padding:6px 10px;margin:0 2px;border:none;border-radius:6px;cursor:pointer;background:#1abc9c;color:white;transition:.2s;}
+.button-small:hover{background:#16a085;transform:scale(1.1);}
+.delete-icon{cursor:pointer;color:red;margin-right:6px;transition:.2s;}
+.delete-icon:hover{transform:scale(1.2);}
+input,select{padding:6px 8px;border-radius:6px;border:1px solid #bdc3c7;margin-right:6px;outline:none;}
+.footer{position:fixed;bottom:0;left:0;right:0;background:white;padding:15px 10px;box-shadow:0 -3px 10px rgba(0,0,0,.1);display:flex;justify-content:space-between;align-items:center;border-top:2px solid #1abc9c;}
+.footer h3{margin:0;color:#2c3e50;}
+#historyList,#addMenuPopup{position:fixed;top:70px;left:10%;width:80%;max-width:400px;max-height:70%;overflow-y:auto;background:white;border-radius:12px;padding:15px;box-shadow:0 5px 20px rgba(0,0,0,.3);display:none;z-index:1050;}
+#historyList .closeBtn,#addMenuPopup .closeBtn{position:absolute;top:10px;right:10px;cursor:pointer;font-weight:bold;font-size:18px;background:red;color:white;border:none;border-radius:50%;width:28px;height:28px;}
+#historyList button.printHistory{padding:4px 6px;font-size:12px;margin-left:5px;cursor:pointer;border:none;border-radius:6px;background:#1abc9c;color:white;}
+#historyList button.printHistory:hover{background:#16a085;transform:scale(1.1);}
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 </style>
 </head>
 <body>
 
 <div class="header">Kantin Kampus 2 Mutu</div>
 <div class="gear" onclick="toggleEdit()">⚙️</div>
+<div class="gear" style="right:60px;" onclick="showAddMenuPopup()">➕</div>
 
-<div id="menuList"></div>
+<div id="menuList" class="menu-list"></div>
 
 <div class="footer">
   <div><input type="text" id="tableNo" placeholder="No Meja / Nama Pelanggan"></div>
@@ -57,7 +49,25 @@ input, select { padding:6px 8px; border-radius:6px; border:1px solid #bdc3c7; ma
   </div>
 </div>
 
+<!-- RIWAYAT -->
 <div id="historyList"></div>
+
+<!-- POP-UP TAMBAH MENU -->
+<div id="addMenuPopup">
+  <button class="closeBtn" onclick="closeAddMenuPopup()">X</button>
+  <h3 style="text-align:center;margin-bottom:10px;">Tambah Menu Baru</h3>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <input type="text" id="newMenuName" placeholder="Nama Menu">
+    <input type="number" id="newMenuPrice" placeholder="Harga (Rp)">
+    <select id="newMenuCategory">
+      <option value="Makanan">Makanan</option>
+      <option value="Minuman">Minuman</option>
+      <option value="Jajanan">Jajanan</option>
+      <option value="Lainnya">Lainnya</option>
+    </select>
+    <button onclick="addMenuFromPopup()" style="background:#1abc9c;color:white;border:none;padding:8px;border-radius:6px;cursor:pointer;">Selesai</button>
+  </div>
+</div>
 
 <script>
 // DATA
@@ -76,7 +86,7 @@ function formatRp(x){ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g,"."); 
 function saveMenu(){ localStorage.setItem("menu", JSON.stringify(menu)); }
 function saveHistory(){ localStorage.setItem("history", JSON.stringify(history)); }
 
-// Bagian renderMenu
+// RENDER MENU
 function renderMenu(){
   const categories=["Makanan","Minuman","Jajanan","Lainnya"];
   let html="";
@@ -102,19 +112,10 @@ function renderMenu(){
       });
     }
   });
-
-  document.getElementById("menuList").innerHTML = html;
-
-  // TOMBOL TAMBAH MENU selalu render **terpisah** agar ga hilang
-  const addBtnContainer = document.getElementById("addMenuBtn");
-  if(editMode){
-    addBtnContainer.style.display="block";
-  } else {
-    addBtnContainer.style.display="none";
-  }
-
+  document.getElementById("menuList").innerHTML=html;
   hitungTotal();
 }
+
 // OPERASI
 function add(i){ menu[i].qty++; saveMenu(); renderMenu(); }
 function minus(i){ if(menu[i].qty>0) menu[i].qty--; saveMenu(); renderMenu(); }
@@ -131,76 +132,51 @@ function enableEdit(i){
 }
 function deleteMenu(i){ if(confirm("Hapus menu ini?")){ menu.splice(i,1); saveMenu(); renderMenu(); } }
 
-// ADD MENU DROPDOWN
-function addNewMenuDropdown(){
-  const container=document.createElement("div");
-  container.style.background="white"; container.style.padding="10px"; container.style.margin="5px 0"; container.style.borderRadius="10px";
-  container.style.boxShadow="0 2px 5px rgba(0,0,0,0.1)";
-  const nameInput=document.createElement("input"); nameInput.placeholder="Nama Menu";
-  const priceInput=document.createElement("input"); priceInput.placeholder="Harga"; priceInput.type="number";
-  const catSelect=document.createElement("select");
-  ["Makanan","Minuman","Jajanan","Lainnya"].forEach(c=>{ const opt=document.createElement("option"); opt.value=c; opt.innerText=c; catSelect.appendChild(opt); });
-  const doneBtn=document.createElement("button"); doneBtn.innerText="Selesai"; doneBtn.style.marginLeft="5px";
-  doneBtn.onclick=function(){
-    if(nameInput.value && priceInput.value){
-      menu.push({name:nameInput.value, price:parseInt(priceInput.value), qty:0, category:catSelect.value});
-      saveMenu(); renderMenu(); container.remove();
-    }
-  };
-  container.appendChild(nameInput); container.appendChild(priceInput); container.appendChild(catSelect); container.appendChild(doneBtn);
-  document.getElementById("menuList").prepend(container);
+// POPUP TAMBAH MENU
+function showAddMenuPopup(){ document.getElementById("addMenuPopup").style.display="block"; }
+function closeAddMenuPopup(){ document.getElementById("addMenuPopup").style.display="none"; }
+function addMenuFromPopup(){
+  const name = document.getElementById("newMenuName").value.trim();
+  const price = parseInt(document.getElementById("newMenuPrice").value);
+  const category = document.getElementById("newMenuCategory").value;
+  if(name && price){
+    menu.push({name:name, price:price, qty:0, category:category});
+    saveMenu(); renderMenu();
+    closeAddMenuPopup();
+    document.getElementById("newMenuName").value="";
+    document.getElementById("newMenuPrice").value="";
+    document.getElementById("newMenuCategory").value="Makanan";
+  } else alert("Nama & Harga harus diisi!");
 }
 
 // PRINT NOTA
 function printNota(order){
-  let now = new Date();
-  let datetime = now.toLocaleString(); // tanggal + jam
-  let orderItems = [], total = 0, tableNo = "", displayTable = "";
-
+  let now=new Date();
+  let datetime=now.toLocaleString();
+  let orderItems=[], total=0, tableNo="", displayTable="";
   if(order){
-    // cetak ulang dari history
-    tableNo = order.table;
-    orderItems = order.items;
-    total = order.total;
-    displayTable = /^\d+$/.test(tableNo) ? "ID Pesanan: " + tableNo : (tableNo ? "Nama Pelanggan: " + tableNo : "");
+    tableNo=order.table; orderItems=order.items; total=order.total;
+    displayTable=/^\d+$/.test(tableNo)?"ID Pesanan: "+tableNo:(tableNo?"Nama Pelanggan: "+tableNo:"");
   } else {
-    // cetak baru
-    tableNo = document.getElementById("tableNo").value;
-    displayTable = /^\d+$/.test(tableNo) ? "ID Pesanan: " + tableNo : (tableNo ? "Nama Pelanggan: " + tableNo : "");
-    menu.forEach(m => { if(m.qty>0){ orderItems.push({name:m.name, qty:m.qty, price:m.price}); total+=m.qty*m.price; }});
-    if(orderItems.length>0){ 
-      history.push({table:tableNo, datetime:datetime, items:orderItems, total:total}); 
-      localStorage.setItem("history", JSON.stringify(history));
-      menu.forEach(m=>m.qty=0); // reset qty
-      localStorage.setItem("menu", JSON.stringify(menu));
-    }
+    tableNo=document.getElementById("tableNo").value;
+    displayTable=/^\d+$/.test(tableNo)?"ID Pesanan: "+tableNo:(tableNo? "Nama Pelanggan: "+tableNo:"");
+    menu.forEach(m=>{ if(m.qty>0){ orderItems.push({name:m.name, qty:m.qty, price:m.price}); total+=m.qty*m.price; }});
+    if(orderItems.length>0){ history.push({table:tableNo, datetime:datetime, items:orderItems, total:total}); saveHistory(); menu.forEach(m=>m.qty=0); saveMenu(); }
   }
-
-  // MULAI FORMAT NOTA
-  let text = `
-<h2 style="text-align:center; margin-bottom:0;">Kantin Kampus 2 Mutu</h2>
+  let text=`<h2 style="text-align:center; margin-bottom:0;">Kantin Kampus 2 Mutu</h2>
 <p style="text-align:center; font-size:12px; margin-top:0;">SMK Muhammadiyah 1 Prambon</p>
 <p style="text-align:center; font-size:12px; margin-top:0;">${datetime}</p>
 ${displayTable ? `<p style="text-align:center; font-size:12px; margin-top:0;">${displayTable}</p>` : ""}
-<hr>
-`;
-
-  // DETAIL ITEM
+<hr>`;
   orderItems.forEach(it=>{
-    // padEnd untuk lurusin Qtt = Total
-    let namePadding = it.name.padEnd(25," ");
-    let qtyPrice = `x${it.qty} = Rp ${formatRp(it.qty*it.price)}`;
-    text += `${namePadding} ${qtyPrice}<br>`;
+    let namePadding=it.name.padEnd(25," ");
+    let qtyPrice=`x${it.qty} = Rp ${formatRp(it.qty*it.price)}`;
+    text+=`${namePadding} ${qtyPrice}<br>`;
   });
-
-  text += `<hr><h3 style="text-align:right;">Total: Rp ${formatRp(total)}</h3>`;
-
-  // Buka jendela print
-  let w = window.open('', 'Nota', 'width=400,height=600');
-  w.document.write(text);
-  w.document.close();
-  w.print();
+  text+=`<hr><h3 style="text-align:right;">Total: Rp ${formatRp(total)}</h3>`;
+  let w=window.open('','Nota','width=400,height=600'); w.document.write(text); w.document.close(); w.print();
 }
+
 // RIWAYAT
 function showHistory(){
   const el=document.getElementById("historyList");
