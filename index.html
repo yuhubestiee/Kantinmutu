@@ -138,36 +138,53 @@ function printNota(reData = null) {
     let orderID, itemsTxt, total, printLines;
     
     if (reData) {
+        // --- JIKA RE-PRINT ---
         orderID = reData.table; 
         itemsTxt = reData.items; 
         total = parseInt(reData.total);
         printLines = itemsTxt.split(", ");
     } else {
+        // --- JIKA PESANAN BARU (INSTAN TANPA LOADING) ---
         const ordered = menu.filter(m => m.qty > 0);
         if (ordered.length === 0) return alert("Pilih menu dulu!");
         
-        // --- LOGIKA ID INSTAN (GHOST STRATEGY) ---
+        // 1. Generate ID Unik Instan (Format: KMU2 + YY + M + D + JamMenitDetik + Random)
         const now = new Date();
         const yy = now.getFullYear().toString().slice(-2);
         const m = now.getMonth() + 1;
         const dd = now.getDate();
-        const hhmm = now.getHours().toString().padStart(2,'0') + now.getMinutes().toString().padStart(2,'0');
-        const random = Math.floor(Math.random() * 900) + 100; // Unik ID Instan
-        orderID = `KMU2${yy}${m}${dd}${hhmm}${random}`;
+        
+        // Ambil Waktu (HHMMSS)
+        const hh = now.getHours().toString().padStart(2,'0');
+        const mm = now.getMinutes().toString().padStart(2,'0');
+        const ss = now.getSeconds().toString().padStart(2,'0');
+        
+        // Tambah 2 angka random buat pengaman extra
+        const rand = Math.floor(Math.random() * 90) + 10; 
+        
+        // Hasilnya: KMU2 26 3 21 015542 99 (Sesuai tgl & detik lu klik)
+        orderID = `KMU2${yy}${m}${dd}${hh}${mm}${ss}${rand}`;
 
         total = ordered.reduce((s, m) => s + (m.qty * m.price), 0);
         itemsTxt = ordered.map(it => `${it.name} (${it.qty})`).join(", ");
         printLines = ordered.map(it => `${it.name} x${it.qty} = Rp ${(it.qty*it.price).toLocaleString()}`);
         
-        // --- TEMBAK KE CLOUD DI BACKGROUND (GHOST SYNC) ---
+        // 2. TEMBAK DATA KE CLOUD (GHOST MODE)
+        // Jalankan di background, web gak perlu nungguin respon
         fetch(SCRIPT_URL, { 
             method: "POST", 
-            mode: 'no-cors', // Mode ghost (jangan tunggu balasan)
-            body: JSON.stringify({ action: "saveOrder", table: orderID, datetime: now.toLocaleString("id-ID"), items: itemsTxt, total: total }) 
+            mode: 'no-cors',
+            body: JSON.stringify({ 
+                action: "saveOrder", 
+                table: orderID, 
+                datetime: now.toLocaleString("id-ID"), 
+                items: itemsTxt, 
+                total: total 
+            }) 
         });
     }
 
-    // --- EKSEKUSI PRINT LANGSUNG ---
+    // --- 3. PROSES CETAK (INSTAN) ---
     const p = window.open('', '', 'width=350,height=600');
     p.document.write(`
         <style>
@@ -179,25 +196,32 @@ function printNota(reData = null) {
             <b style="font-size:14px">KANTIN KAMPUS 2 MUTU</b><br>
             SMK Muhammadiyah 1 Prambon<br>
             <hr>
-            <b>NO: ${orderID}</b><br>
+            <b>NO. PESANAN: ${orderID}</b><br>
             ${new Date().toLocaleString("id-ID")}<br>
             <hr>
         </div>
     `);
+    
     printLines.forEach(l => p.document.write(`<div class="flex"><span>${l}</span></div>`));
+    
     p.document.write(`
         <div class="center">
             <hr>
             <div class="flex"><b>TOTAL</b> <b>Rp ${total.toLocaleString()}</b></div>
             <hr>
-            LUNAS<br><br>
-            Selamat Menikmati!
+            STATUS: LUNAS<br><br>
+            Terima Kasih Atas Kunjungannya!
         </div>
     `);
+    
     p.document.close();
     
     // Focus dan Print
-    setTimeout(() => { p.focus(); p.print(); p.close(); if(!reData) resetCart(); }, 200);
+    p.focus();
+    p.print();
+    p.close();
+    
+    if(!reData) resetCart();
 }
 
 // 3. RIWAYAT & MANAJEMEN MENU
