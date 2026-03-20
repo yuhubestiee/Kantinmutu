@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kantin Mutu - Pro Cloud 2026</title>
+    <title>Kantin Mutu - Smart Kasir 2026</title>
     <style>
         :root { --primary: #1abc9c; --dark: #2c3e50; --bg: #f4f7f6; }
         body{font-family:'Segoe UI', sans-serif;margin:0;padding:0;background:var(--bg);padding-bottom:180px;color:var(--dark);}
@@ -21,17 +21,16 @@
         .qty-controls{display:flex;align-items:center;gap:10px;}
         .btn-qty{width:30px;height:30px;border:none;border-radius:8px;background:var(--primary);color:white;font-weight:bold;cursor:pointer;}
         
-        .footer{position:fixed;bottom:0;width:100%;background:white;padding:15px;box-shadow:0 -5px 20px rgba(0,0,0,0.1);box-sizing:border-box;border-radius:20px 20px 0 0;}
-        .footer input{width:100%;padding:12px;margin-bottom:10px;border-radius:10px;border:1.5px solid #eee;box-sizing:border-box;outline:none;}
-        .footer-row{display:flex;justify-content:space-between;align-items:center;gap:5px;}
+        .footer{position:fixed;bottom:0;width:100%;background:white;padding:20px;box-shadow:0 -5px 20px rgba(0,0,0,0.1);box-sizing:border-box;border-radius:20px 20px 0 0;}
+        .footer-row{display:flex;justify-content:space-between;align-items:center;gap:10px;}
         
         .modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:400px;background:white;padding:20px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,0.3);display:none;z-index:1000;max-height:80vh;overflow-y:auto;}
         .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:1px solid #eee;padding-bottom:10px;}
         .close-x{background:#e74c3c;color:white;border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;}
         
         .history-item{border-bottom:1px solid #eee;padding:12px 0;}
-        .btn-main{background:var(--primary);color:white;border:none;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer;flex:1;}
-        .btn-sec{background:#f8f9fa;color:var(--dark);border:1px solid #ddd;padding:12px;border-radius:8px;cursor:pointer;}
+        .btn-main{background:var(--primary);color:white;border:none;padding:15px;border-radius:12px;font-weight:bold;cursor:pointer;flex:1;font-size:16px;}
+        .btn-sec{background:#f8f9fa;color:var(--dark);border:1px solid #ddd;padding:12px;border-radius:12px;cursor:pointer;}
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -40,7 +39,7 @@
 
 <div id="loading">
     <div style="width:35px;height:35px;border:4px solid #eee;border-top:4px solid var(--primary);border-radius:50%;animation:spin 1s linear infinite;"></div>
-    <span>Sinkronisasi Cloud...</span>
+    <span>Memproses Pesanan...</span>
 </div>
 
 <div class="header">
@@ -52,12 +51,12 @@
 <div id="menuList" class="menu-list"></div>
 
 <div class="footer">
-    <input type="text" id="tableNo" placeholder="No Meja / Nama Pelanggan">
     <div class="footer-row">
         <div style="flex:1">
-            <h2 style="margin:0; font-size: 20px;">Rp <span id="total">0</span></h2>
+            <small style="color:#7f8c8d">Total Bayar:</small>
+            <h2 style="margin:0; font-size: 22px; color:var(--dark)">Rp <span id="total">0</span></h2>
         </div>
-        <button class="btn-sec" onclick="showHistory()">📜 Riwayat</button>
+        <button class="btn-sec" onclick="showHistory()" title="Riwayat">📜</button>
         <button class="btn-main" onclick="printNota()">BAYAR & PRINT</button>
         <button class="btn-sec" style="color:red" onclick="resetCart()">🗑️</button>
     </div>
@@ -65,15 +64,15 @@
 
 <div id="addMenuPopup" class="modal">
     <div class="modal-header"><h3>Kelola Menu</h3><button class="close-x" onclick="closePopup('addMenuPopup')">X</button></div>
-    <input type="text" id="newMenuName" placeholder="Nama Menu">
-    <input type="number" id="newMenuPrice" placeholder="Harga">
-    <select id="newMenuCategory" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ddd;">
+    <input type="text" id="newMenuName" placeholder="Nama Menu" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ddd;border-radius:8px;">
+    <input type="number" id="newMenuPrice" placeholder="Harga" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ddd;border-radius:8px;">
+    <select id="newMenuCategory" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd;">
         <option value="Makanan">Makanan</option>
         <option value="Minuman">Minuman</option>
         <option value="Jajanan">Jajanan</option>
         <option value="Lainnya">Lainnya</option>
     </select>
-    <button onclick="addMenuFromPopup()" class="btn-main" style="width:100%">SIMPAN DATA</button>
+    <button onclick="addMenuFromPopup()" class="btn-main" style="width:100%">SIMPAN KE CLOUD</button>
 </div>
 
 <div id="historyPopup" class="modal">
@@ -82,8 +81,7 @@
 </div>
 
 <script>
-// URL SCRIPT BARU TONY
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzs_I01z6fMkootB7CBy-8oKBpcbKtMG8pYac7ooRAtCToR-k_bz40ePJt8tYW3XH0j2A/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwe7AhpgKehwmReVQZpXSoq5aNChEwR4dNLyXkjAU9FfRnBO0zJCCSPa8zlI1XzVA/exec";
 
 let menu = [];
 let editMode = false;
@@ -122,7 +120,7 @@ function renderMenu() {
             });
         }
     });
-    document.getElementById("menuList").innerHTML = html || "<center>Belum ada data menu.</center>";
+    document.getElementById("menuList").innerHTML = html || "<center style='margin-top:20px'>Belum ada menu.</center>";
     hitungTotal();
 }
 
@@ -133,27 +131,67 @@ function hitungTotal() {
 }
 
 async function printNota(reData = null) {
-    let table, itemsTxt, total, printLines;
+    let orderID, itemsTxt, total, printLines;
+    
     if (reData) {
-        table = reData.table; itemsTxt = reData.items; total = parseInt(reData.total);
+        orderID = reData.table; 
+        itemsTxt = reData.items; 
+        total = parseInt(reData.total);
         printLines = itemsTxt.split(", ");
     } else {
-        table = document.getElementById("tableNo").value || "Umum";
         const ordered = menu.filter(m => m.qty > 0);
         if (ordered.length === 0) return alert("Pilih menu dulu!");
-        total = ordered.reduce((s, m) => s + (m.qty * m.price), 0);
-        itemsTxt = ordered.map(it => `${it.name} (${it.qty})`).join(", ");
-        printLines = ordered.map(it => `${it.name} x${it.qty}`);
         
         toggleLoading(true);
-        await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "saveOrder", table, datetime: new Date().toLocaleString("id-ID"), items: itemsTxt, total }) });
+        try {
+            const resNum = await fetch(SCRIPT_URL + "?action=getNextOrderNumber");
+            const nextNum = await resNum.text();
+            
+            const now = new Date();
+            const yy = now.getFullYear().toString().slice(-2);
+            const m = now.getMonth() + 1;
+            const dd = now.getDate();
+            const sequence = nextNum.padStart(4, '0');
+            orderID = `KMU2${yy}${m}${dd}${sequence}`;
+
+            total = ordered.reduce((s, m) => s + (m.qty * m.price), 0);
+            itemsTxt = ordered.map(it => `${it.name} (${it.qty})`).join(", ");
+            printLines = ordered.map(it => `${it.name} x${it.qty} = Rp ${(it.qty*it.price).toLocaleString()}`);
+            
+            await fetch(SCRIPT_URL, { 
+                method: "POST", 
+                body: JSON.stringify({ action: "saveOrder", table: orderID, datetime: new Date().toLocaleString("id-ID"), items: itemsTxt, total: total }) 
+            });
+        } catch (e) {
+            alert("Gagal memproses ke Cloud!");
+            toggleLoading(false);
+            return;
+        }
         toggleLoading(false);
     }
 
-    const p = window.open('', '', 'width=300,height=600');
-    p.document.write(`<style>body{font-family:monospace;font-size:12px;padding:10px}</style><center><b>KANTIN MUTU</b><br>${new Date().toLocaleString()}<br>Meja: ${table}<br>---</center>`);
-    printLines.forEach(l => p.document.write(`<div>${l}</div>`));
-    p.document.write(`<center>---<br><b>TOTAL: Rp ${total.toLocaleString()}</b><br>Lunas</center>`);
+    const p = window.open('', '', 'width=350,height=600');
+    p.document.write(`
+        <style>body{font-family:monospace;font-size:12px;padding:20px} .center{text-align:center} .flex{display:flex;justify-content:space-between}</style>
+        <div class="center">
+            <b style="font-size:14px">KANTIN KAMPUS 2 MUTU</b><br>
+            SMK Muhammadiyah 1 Prambon<br>
+            ---------------------------<br>
+            <b>NO: ${orderID}</b><br>
+            ${new Date().toLocaleString("id-ID")}<br>
+            ---------------------------
+        </div>
+    `);
+    printLines.forEach(l => p.document.write(`<div class="flex"><span>${l}</span></div>`));
+    p.document.write(`
+        <div class="center">
+            ---------------------------<br>
+            <div class="flex"><b>TOTAL</b> <b>Rp ${total.toLocaleString()}</b></div>
+            ---------------------------<br>
+            LUNAS<br><br>
+            Selamat Menikmati!
+        </div>
+    `);
     p.document.close();
     setTimeout(() => { p.print(); p.close(); if(!reData) resetCart(); }, 500);
 }
@@ -161,22 +199,22 @@ async function printNota(reData = null) {
 async function showHistory() {
     document.getElementById("historyPopup").style.display = "block";
     const el = document.getElementById("historyList");
-    el.innerHTML = "⏳ Menarik riwayat...";
+    el.innerHTML = "⏳ Menarik data riwayat...";
     try {
         const res = await fetch(SCRIPT_URL + "?action=readHistory");
         const hData = await res.json();
-        let html = hData.map(h => `
+        el.innerHTML = hData.map(h => `
             <div class="history-item">
-                <div style="display:flex; justify-content:space-between">
-                    <b>${h.table}</b> <button onclick='printNota(${JSON.stringify(h)})' style="border:none;background:var(--primary);color:white;border-radius:4px;padding:2px 6px;cursor:pointer;">🖨️</button>
+                <div style="display:flex; justify-content:space-between; align-items:center">
+                    <b>${h.table}</b> 
+                    <button onclick='printNota(${JSON.stringify(h)})' style="border:none;background:var(--primary);color:white;border-radius:6px;padding:5px 10px;cursor:pointer;">🖨️</button>
                 </div>
                 <small>${h.datetime}</small><br>
-                <span style="font-size:11px">${h.items}</span><br>
+                <span style="font-size:11px;color:#666">${h.items}</span><br>
                 <b>Rp ${parseInt(h.total).toLocaleString()}</b>
             </div>
-        `).join("");
-        el.innerHTML = html || "Belum ada riwayat.";
-    } catch (e) { el.innerHTML = "Gagal memuat."; }
+        `).join("") || "Belum ada riwayat.";
+    } catch (e) { el.innerHTML = "Gagal memuat data."; }
 }
 
 async function syncMenu() {
