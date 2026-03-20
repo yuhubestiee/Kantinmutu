@@ -85,20 +85,6 @@ let editMode=false;
 function formatRp(x){ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g,"."); }
 function saveMenu(){ localStorage.setItem("menu", JSON.stringify(menu)); }
 function saveHistory(){ localStorage.setItem("history", JSON.stringify(history)); }
-window.addEventListener("click", function(event) {
-  const historyEl = document.getElementById("historyList");
-  const addMenuEl = document.getElementById("addMenuPopup");
-
-  // Jika pop-up riwayat tampil & klik di luar
-  if(historyEl.style.display === "block" && !historyEl.contains(event.target)){
-    historyEl.style.display = "none";
-  }
-
-  // Jika pop-up tambah menu tampil & klik di luar
-  if(addMenuEl.style.display === "block" && !addMenuEl.contains(event.target)){
-    addMenuEl.style.display = "none";
-  }
-});
 
 // RENDER MENU
 function renderMenu(){
