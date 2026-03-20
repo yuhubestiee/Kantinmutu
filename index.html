@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kantin Mutu - Smart Kasir 2026</title>
+    <title>Kantin Mutu - Ghost System 2026</title>
     <style>
         :root { --primary: #1abc9c; --dark: #2c3e50; --bg: #f4f7f6; }
         body{font-family:'Segoe UI', sans-serif;margin:0;padding:0;background:var(--bg);padding-bottom:180px;color:var(--dark);}
@@ -12,6 +12,7 @@
         .gear, .add-btn {font-size:24px;cursor:pointer;position:absolute;top:12px;color:white;transition:.3s;}
         .gear{right:15px;} .add-btn{right:60px;}
         
+        /* Loading hanya untuk saat buka web pertama kali */
         #loading{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.9);display:none;justify-content:center;align-items:center;z-index:9999;flex-direction:column;gap:10px;font-weight:bold;color:var(--primary);}
 
         .menu-list{padding:10px 15px;}
@@ -39,7 +40,7 @@
 
 <div id="loading">
     <div style="width:35px;height:35px;border:4px solid #eee;border-top:4px solid var(--primary);border-radius:50%;animation:spin 1s linear infinite;"></div>
-    <span>Memproses Pesanan...</span>
+    <span>Sinkronisasi Menu...</span>
 </div>
 
 <div class="header">
@@ -81,11 +82,13 @@
 </div>
 
 <script>
+// URL SCRIPT LU
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwe7AhpgKehwmReVQZpXSoq5aNChEwR4dNLyXkjAU9FfRnBO0zJCCSPa8zlI1XzVA/exec";
 
 let menu = [];
 let editMode = false;
 
+// 1. LOAD MENU AWAL (CLOUD)
 async function loadData() {
     toggleLoading(true);
     try {
@@ -130,100 +133,84 @@ function hitungTotal() {
     document.getElementById("total").innerText = t.toLocaleString('id-ID');
 }
 
-async function printNota(reData = null) {
+// 2. GHOST PRINT (INSTAN TANPA LOADING)
+function printNota(reData = null) {
     let orderID, itemsTxt, total, printLines;
     
     if (reData) {
-        // --- JIKA RE-PRINT (TANPA LOADING CLOUD) ---
         orderID = reData.table; 
         itemsTxt = reData.items; 
         total = parseInt(reData.total);
         printLines = itemsTxt.split(", ");
     } else {
-        // --- JIKA PESANAN BARU ---
         const ordered = menu.filter(m => m.qty > 0);
         if (ordered.length === 0) return alert("Pilih menu dulu!");
         
-        toggleLoading(true); // TAMPILKAN LOADING
+        // --- LOGIKA ID INSTAN (GHOST STRATEGY) ---
+        const now = new Date();
+        const yy = now.getFullYear().toString().slice(-2);
+        const m = now.getMonth() + 1;
+        const dd = now.getDate();
+        const hhmm = now.getHours().toString().padStart(2,'0') + now.getMinutes().toString().padStart(2,'0');
+        const random = Math.floor(Math.random() * 900) + 100; // Unik ID Instan
+        orderID = `KMU2${yy}${m}${dd}${hhmm}${random}`;
 
-        try {
-            // 1. Ambil nomor urut
-            const resNum = await fetch(SCRIPT_URL + "?action=getNextOrderNumber");
-            const nextNum = await resNum.text();
-            
-            // 2. Generate Order ID (KMU2 + YY + M + D + 000X)
-            const now = new Date();
-            const yy = now.getFullYear().toString().slice(-2);
-            const m = now.getMonth() + 1;
-            const dd = now.getDate();
-            const sequence = nextNum.padStart(4, '0');
-            orderID = `KMU2${yy}${m}${dd}${sequence}`;
-
-            total = ordered.reduce((s, m) => s + (m.qty * m.price), 0);
-            itemsTxt = ordered.map(it => `${it.name} (${it.qty})`).join(", ");
-            printLines = ordered.map(it => `${it.name} x${it.qty}`);
-            
-            // 3. Simpan ke Google Sheet
-            await fetch(SCRIPT_URL, { 
-                method: "POST", 
-                body: JSON.stringify({ action: "saveOrder", table: orderID, datetime: new Date().toLocaleString("id-ID"), items: itemsTxt, total: total }) 
-            });
-
-            // --- PENTING: MATIKAN LOADING SEBELUM PRINT ---
-            toggleLoading(false); 
-
-        } catch (e) {
-            toggleLoading(false); // MATIKAN LOADING JIKA ERROR
-            alert("Gagal koneksi Cloud!");
-            return;
-        }
+        total = ordered.reduce((s, m) => s + (m.qty * m.price), 0);
+        itemsTxt = ordered.map(it => `${it.name} (${it.qty})`).join(", ");
+        printLines = ordered.map(it => `${it.name} x${it.qty} = Rp ${(it.qty*it.price).toLocaleString()}`);
+        
+        // --- TEMBAK KE CLOUD DI BACKGROUND (GHOST SYNC) ---
+        fetch(SCRIPT_URL, { 
+            method: "POST", 
+            mode: 'no-cors', // Mode ghost (jangan tunggu balasan)
+            body: JSON.stringify({ action: "saveOrder", table: orderID, datetime: now.toLocaleString("id-ID"), items: itemsTxt, total: total }) 
+        });
     }
 
-    // --- PROSES CETAK (DI LUAR BLOK LOADING) ---
-    // Kasih jeda 300ms biar browser bener-bener bersih dari overlay loading
-    setTimeout(() => {
-        const p = window.open('', '', 'width=350,height=600');
-        p.document.write(`
-            <style>body{font-family:monospace;font-size:12px;padding:20px} .center{text-align:center} .flex{display:flex;justify-content:space-between}</style>
-            <div class="center">
-                <b style="font-size:14px">KANTIN KAMPUS 2 MUTU</b><br>
-                SMK Muhammadiyah 1 Prambon<br>
-                ---------------------------<br>
-                <b>NO: ${orderID}</b><br>
-                ${new Date().toLocaleString("id-ID")}<br>
-                ---------------------------
-            </div>
-        `);
-        printLines.forEach(l => p.document.write(`<div class="flex"><span>${l}</span></div>`));
-        p.document.write(`
-            <div class="center">
-                ---------------------------<br>
-                <div class="flex"><b>TOTAL</b> <b>Rp ${total.toLocaleString()}</b></div>
-                ---------------------------<br>
-                LUNAS<br><br>
-                Selamat Menikmati!
-            </div>
-        `);
-        p.document.close();
-        
-        // Eksekusi Print
-        p.print();
-        p.close();
-        
-        if(!reData) resetCart();
-    }, 300);
+    // --- EKSEKUSI PRINT LANGSUNG ---
+    const p = window.open('', '', 'width=350,height=600');
+    p.document.write(`
+        <style>
+            body{font-family:monospace;font-size:12px;padding:20px} 
+            .center{text-align:center} .flex{display:flex;justify-content:space-between}
+            hr{border:none; border-top:1px dashed #000; margin:10px 0;}
+        </style>
+        <div class="center">
+            <b style="font-size:14px">KANTIN KAMPUS 2 MUTU</b><br>
+            SMK Muhammadiyah 1 Prambon<br>
+            <hr>
+            <b>NO: ${orderID}</b><br>
+            ${new Date().toLocaleString("id-ID")}<br>
+            <hr>
+        </div>
+    `);
+    printLines.forEach(l => p.document.write(`<div class="flex"><span>${l}</span></div>`));
+    p.document.write(`
+        <div class="center">
+            <hr>
+            <div class="flex"><b>TOTAL</b> <b>Rp ${total.toLocaleString()}</b></div>
+            <hr>
+            LUNAS<br><br>
+            Selamat Menikmati!
+        </div>
+    `);
+    p.document.close();
+    
+    // Focus dan Print
+    setTimeout(() => { p.focus(); p.print(); p.close(); if(!reData) resetCart(); }, 200);
 }
 
+// 3. RIWAYAT & MANAJEMEN MENU
 async function showHistory() {
     document.getElementById("historyPopup").style.display = "block";
     const el = document.getElementById("historyList");
-    el.innerHTML = "⏳ Menarik data riwayat...";
+    el.innerHTML = "⏳ Menarik data...";
     try {
         const res = await fetch(SCRIPT_URL + "?action=readHistory");
         const hData = await res.json();
         el.innerHTML = hData.map(h => `
             <div class="history-item">
-                <div style="display:flex; justify-content:space-between; align-items:center">
+                <div style="display:flex; justify-content:space-between">
                     <b>${h.table}</b> 
                     <button onclick='printNota(${JSON.stringify(h)})' style="border:none;background:var(--primary);color:white;border-radius:6px;padding:5px 10px;cursor:pointer;">🖨️</button>
                 </div>
@@ -232,7 +219,7 @@ async function showHistory() {
                 <b>Rp ${parseInt(h.total).toLocaleString()}</b>
             </div>
         `).join("") || "Belum ada riwayat.";
-    } catch (e) { el.innerHTML = "Gagal memuat data."; }
+    } catch (e) { el.innerHTML = "Gagal memuat."; }
 }
 
 async function syncMenu() {
