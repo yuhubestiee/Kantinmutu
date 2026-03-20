@@ -76,7 +76,7 @@ function formatRp(x){ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g,"."); 
 function saveMenu(){ localStorage.setItem("menu", JSON.stringify(menu)); }
 function saveHistory(){ localStorage.setItem("history", JSON.stringify(history)); }
 
-// RENDER MENU
+// Bagian renderMenu
 function renderMenu(){
   const categories=["Makanan","Minuman","Jajanan","Lainnya"];
   let html="";
@@ -102,11 +102,19 @@ function renderMenu(){
       });
     }
   });
-  if(editMode){ html+=`<div style="margin-top:10px;"><button onclick="addNewMenuDropdown()">Tambah Menu</button></div>`; }
-  document.getElementById("menuList").innerHTML=html;
+
+  document.getElementById("menuList").innerHTML = html;
+
+  // TOMBOL TAMBAH MENU selalu render **terpisah** agar ga hilang
+  const addBtnContainer = document.getElementById("addMenuBtn");
+  if(editMode){
+    addBtnContainer.style.display="block";
+  } else {
+    addBtnContainer.style.display="none";
+  }
+
   hitungTotal();
 }
-
 // OPERASI
 function add(i){ menu[i].qty++; saveMenu(); renderMenu(); }
 function minus(i){ if(menu[i].qty>0) menu[i].qty--; saveMenu(); renderMenu(); }
