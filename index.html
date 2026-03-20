@@ -12,7 +12,6 @@
         .gear, .add-btn {font-size:24px;cursor:pointer;position:absolute;top:12px;color:white;transition:.3s;}
         .gear{right:15px;} .add-btn{right:60px;}
         
-        /* Loading hanya untuk saat buka web pertama kali */
         #loading{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.9);display:none;justify-content:center;align-items:center;z-index:9999;flex-direction:column;gap:10px;font-weight:bold;color:var(--primary);}
 
         .menu-list{padding:10px 15px;}
@@ -82,13 +81,11 @@
 </div>
 
 <script>
-// URL SCRIPT LU
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwe7AhpgKehwmReVQZpXSoq5aNChEwR4dNLyXkjAU9FfRnBO0zJCCSPa8zlI1XzVA/exec";
 
 let menu = [];
 let editMode = false;
 
-// 1. LOAD MENU AWAL (CLOUD)
 async function loadData() {
     toggleLoading(true);
     try {
@@ -133,21 +130,15 @@ function hitungTotal() {
     document.getElementById("total").innerText = t.toLocaleString('id-ID');
 }
 
-// 2. GHOST PRINT (INSTAN TANPA LOADING)
 function printNota(reData = null) {
     let orderID, itemsTxt, total, printLinesFormatted;
     
     if (reData) {
-        // --- JIKA RE-PRINT ---
         orderID = reData.table; 
         itemsTxt = reData.items; 
         total = parseInt(reData.total);
-        // Format ulang data dari sheet untuk tampilan nota
-        printLinesFormatted = itemsTxt.split(", ").map(item => {
-            return `<div>${item}</div>`;
-        });
+        printLinesFormatted = itemsTxt.split(", ").map(item => `<div>${item}</div>`);
     } else {
-        // --- JIKA PESANAN BARU (INSTAN) ---
         const ordered = menu.filter(m => m.qty > 0);
         if (ordered.length === 0) return alert("Pilih menu dulu!");
         
@@ -162,11 +153,8 @@ function printNota(reData = null) {
         
         orderID = `KMU2${yy}${m}${dd}${hh}${mm}${ss}${rand}`;
         total = ordered.reduce((s, m) => s + (m.qty * m.price), 0);
-        
-        // Simpan ke Sheet (Ringkas)
         itemsTxt = ordered.map(it => `${it.name} (${it.qty})`).join(", ");
         
-        // Format Baris untuk Nota (Detail Harga)
         printLinesFormatted = ordered.map(it => `
             <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
                 <span>${it.name}</span>
@@ -177,7 +165,6 @@ function printNota(reData = null) {
             </div>
         `);
         
-        // GHOST SYNC KE CLOUD
         fetch(SCRIPT_URL, { 
             method: "POST", 
             mode: 'no-cors',
@@ -185,7 +172,6 @@ function printNota(reData = null) {
         });
     }
 
-    // --- PROSES CETAK ---
     const p = window.open('', '', 'width=350,height=600');
     p.document.write(`
         <style>
@@ -202,18 +188,11 @@ function printNota(reData = null) {
             ${new Date().toLocaleString("id-ID")}<br>
             <hr>
         </div>
-        <div id="items-list">
-            ${printLinesFormatted.join('')}
-        </div>
+        <div>${printLinesFormatted.join('')}</div>
         <hr>
-        <div class="flex-between" style="font-size:14px">
-            <b>TOTAL</b>
-            <b>Rp ${total.toLocaleString()}</b>
-        </div>
+        <div class="flex-between" style="font-size:14px"><b>TOTAL</b><b>Rp ${total.toLocaleString()}</b></div>
         <hr>
-        <div class="center">
-            Menuntut ilmu adalah jihad yang pahalanya mengalir hingga akhir hayat
-        </div>
+        <div class="center">Menuntut ilmu adalah jihad yang pahalanya mengalir hingga akhir hayat</div>
     `);
     
     p.document.close();
@@ -224,11 +203,7 @@ function printNota(reData = null) {
         if(!reData) resetCart();
     }, 250);
 }
-    
-    if(!reData) resetCart();
-}
 
-// 3. RIWAYAT & MANAJEMEN MENU
 async function showHistory() {
     document.getElementById("historyPopup").style.display = "block";
     const el = document.getElementById("historyList");
