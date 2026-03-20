@@ -180,21 +180,41 @@ ${displayTable ? `<p style="text-align:center; font-size:12px; margin-top:0;">${
 // RIWAYAT
 function showHistory(){
   const el=document.getElementById("historyList");
+  const content=document.getElementById("historyContent");
   if(el.style.display=="none" || el.style.display==""){
     el.style.display="block";
-    let html=`<button class="closeBtn" onclick="elClose()">X</button><h3>Riwayat Pesanan</h3>`;
+
+    // Render history
+    let html="";
     history.forEach((h,i)=>{
-      html+=`<p>${i+1}. ${/^\d+$/.test(h.table)?"ID Pesanan: ":"Nama Pelanggan: "}${h.table} | ${h.datetime} | Total: Rp ${formatRp(h.total)}
-      <button class="printHistory" onclick="printNota(history[${i}])">🖨️</button></p>`;
-      h.items.forEach(it=>{ html+=`<p style="margin-left:15px;">${it.name} x${it.qty} = Rp ${formatRp(it.qty*it.price)}</p>`; });
+      html+=`<p style="margin:4px 0; font-weight:bold;">
+        ${i+1}. ${/^\d+$/.test(h.table)?"ID Pesanan: ":"Nama Pelanggan: "}${h.table} | ${h.datetime} | Total: Rp ${formatRp(h.total)}
+        <button class="printHistory" onclick="printNota(history[${i}])" 
+          style="padding:4px 6px;font-size:12px;margin-left:5px;border:none;border-radius:6px;background:#1abc9c;color:white;cursor:pointer;">🖨️</button>
+      </p>`;
+      h.items.forEach(it=>{
+        html+=`<p style="margin-left:15px;">${it.name} x${it.qty} = Rp ${formatRp(it.qty*it.price)}</p>`;
+      });
       html+="<hr>";
     });
+
+    // Tambahkan tombol hapus riwayat di bawah semua list
+    html+=`<button onclick="clearHistory()" style="color:red;background:none;border:none;font-weight:bold;cursor:pointer;margin-top:10px;width:100%;">🗑️ Hapus Semua Riwayat</button>`;
+
     el.innerHTML=html;
   } else el.style.display="none";
 }
-function elClose(){ document.getElementById("historyList").style.display="none"; }
 
-renderMenu();
+// Hapus semua riwayat
+function clearHistory(){
+  if(confirm("Hapus semua riwayat pesanan?")){
+    history=[];
+    localStorage.setItem("history", JSON.stringify(history));
+    showHistory(); // refresh pop-up
+  }
+}
+
+function elClose(){ document.getElementById("historyList").style.display="none"; }
 </script>
 </body>
 </html>
