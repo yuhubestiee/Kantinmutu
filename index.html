@@ -135,61 +135,63 @@ function hitungTotal() {
 
 // 2. GHOST PRINT (INSTAN TANPA LOADING)
 function printNota(reData = null) {
-    let orderID, itemsTxt, total, printLines;
+    let orderID, itemsTxt, total, printLinesFormatted;
     
     if (reData) {
         // --- JIKA RE-PRINT ---
         orderID = reData.table; 
         itemsTxt = reData.items; 
         total = parseInt(reData.total);
-        printLines = itemsTxt.split(", ");
+        // Format ulang data dari sheet untuk tampilan nota
+        printLinesFormatted = itemsTxt.split(", ").map(item => {
+            return `<div>${item}</div>`;
+        });
     } else {
-        // --- JIKA PESANAN BARU (INSTAN TANPA LOADING) ---
+        // --- JIKA PESANAN BARU (INSTAN) ---
         const ordered = menu.filter(m => m.qty > 0);
         if (ordered.length === 0) return alert("Pilih menu dulu!");
         
-        // 1. Generate ID Unik Instan (Format: KMU2 + YY + M + D + JamMenitDetik + Random)
         const now = new Date();
         const yy = now.getFullYear().toString().slice(-2);
         const m = now.getMonth() + 1;
         const dd = now.getDate();
-        
-        // Ambil Waktu (HHMMSS)
         const hh = now.getHours().toString().padStart(2,'0');
         const mm = now.getMinutes().toString().padStart(2,'0');
         const ss = now.getSeconds().toString().padStart(2,'0');
-        
-        // Tambah 2 angka random buat pengaman extra
         const rand = Math.floor(Math.random() * 90) + 10; 
         
-        // Hasilnya: KMU2 26 3 21 015542 99 (Sesuai tgl & detik lu klik)
         orderID = `KMU2${yy}${m}${dd}${hh}${mm}${ss}${rand}`;
-
         total = ordered.reduce((s, m) => s + (m.qty * m.price), 0);
-        itemsTxt = ordered.map(it => `${it.name} (${it.qty})`).join(", ");
-        printLines = ordered.map(it => `${it.name} x${it.qty} = Rp ${(it.qty*it.price).toLocaleString()}`);
         
-        // 2. TEMBAK DATA KE CLOUD (GHOST MODE)
-        // Jalankan di background, web gak perlu nungguin respon
+        // Simpan ke Sheet (Ringkas)
+        itemsTxt = ordered.map(it => `${it.name} (${it.qty})`).join(", ");
+        
+        // Format Baris untuk Nota (Detail Harga)
+        printLinesFormatted = ordered.map(it => `
+            <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                <span>${it.name}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:#333; margin-bottom:5px;">
+                <span>&nbsp;&nbsp;${it.qty} x ${parseInt(it.price).toLocaleString()}</span>
+                <span>Rp ${(it.qty * it.price).toLocaleString()}</span>
+            </div>
+        `);
+        
+        // GHOST SYNC KE CLOUD
         fetch(SCRIPT_URL, { 
             method: "POST", 
             mode: 'no-cors',
-            body: JSON.stringify({ 
-                action: "saveOrder", 
-                table: orderID, 
-                datetime: now.toLocaleString("id-ID"), 
-                items: itemsTxt, 
-                total: total 
-            }) 
+            body: JSON.stringify({ action: "saveOrder", table: orderID, datetime: now.toLocaleString("id-ID"), items: itemsTxt, total: total }) 
         });
     }
 
-    // --- 3. PROSES CETAK (INSTAN) ---
+    // --- PROSES CETAK ---
     const p = window.open('', '', 'width=350,height=600');
     p.document.write(`
         <style>
-            body{font-family:monospace;font-size:12px;padding:20px} 
-            .center{text-align:center} .flex{display:flex;justify-content:space-between}
+            body{font-family:monospace;font-size:12px;padding:15px;line-height:1.4;} 
+            .center{text-align:center} 
+            .flex-between{display:flex;justify-content:space-between}
             hr{border:none; border-top:1px dashed #000; margin:10px 0;}
         </style>
         <div class="center">
@@ -200,26 +202,28 @@ function printNota(reData = null) {
             ${new Date().toLocaleString("id-ID")}<br>
             <hr>
         </div>
-    `);
-    
-    printLines.forEach(l => p.document.write(`<div class="flex"><span>${l}</span></div>`));
-    
-    p.document.write(`
+        <div id="items-list">
+            ${printLinesFormatted.join('')}
+        </div>
+        <hr>
+        <div class="flex-between" style="font-size:14px">
+            <b>TOTAL</b>
+            <b>Rp ${total.toLocaleString()}</b>
+        </div>
+        <hr>
         <div class="center">
-            <hr>
-            <div class="flex"><b>TOTAL</b> <b>Rp ${total.toLocaleString()}</b></div>
-            <hr>
-            STATUS: LUNAS<br><br>
-            Terima Kasih Atas Kunjungannya!
+            Menuntut ilmu adalah jihad yang pahalanya mengalir hingga akhir hayat
         </div>
     `);
     
     p.document.close();
-    
-    // Focus dan Print
-    p.focus();
-    p.print();
-    p.close();
+    setTimeout(() => {
+        p.focus();
+        p.print();
+        p.close();
+        if(!reData) resetCart();
+    }, 250);
+}
     
     if(!reData) resetCart();
 }
