@@ -3,94 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kantin Kampus 2 Mutu - Cloud Edition</title>
+    <title>Kantin Kampus 2 Mutu - Pro Cloud</title>
     <style>
-        body{font-family:'Segoe UI',sans-serif;margin:0;padding:0;background:#f0f2f5;padding-bottom:150px;}
-        .header{text-align:center;font-size:24px;font-weight:bold;padding:15px;background:#1abc9c;color:white;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-        .gear{font-size:24px;cursor:pointer;position:absolute;top:15px;right:20px;color:white;transition:.3s;}
-        .gear:hover{transform:rotate(20deg);}
-        .add-btn{font-size:24px;cursor:pointer;position:absolute;top:15px;right:65px;color:white;}
+        :root { --primary: #1abc9c; --dark: #2c3e50; --bg: #f0f2f5; }
+        body{font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;margin:0;padding:0;background:var(--bg);padding-bottom:160px;color:var(--dark);}
         
-        /* Loading Overlay */
-        #loading{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);display:none;justify-content:center;align-items:center;z-index:9999;font-weight:bold;color:#1abc9c;}
+        /* Header */
+        .header{text-align:center;font-size:22px;font-weight:bold;padding:15px;background:var(--primary);color:white;box-shadow:0 2px 10px rgba(0,0,0,0.1);position:sticky;top:0;z-index:100;}
+        .gear{font-size:24px;cursor:pointer;position:absolute;top:12px;right:15px;color:white;transition:.3s;}
+        .add-btn{font-size:24px;cursor:pointer;position:absolute;top:12px;right:60px;color:white;}
+        .gear:hover{transform:rotate(30deg);}
 
-        .menu-list{padding:10px; max-height: calc(100vh - 280px); overflow-y: auto;}
-        h4.category{margin:15px 0 5px 0;font-size:18px;color:#34495e;border-bottom:2px solid #1abc9c;padding-bottom:3px;}
-        .menu{background:white;margin:8px 0;padding:12px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 5px rgba(0,0,0,.05);}
-        .menu b{font-size: 15px;}
-        .price{color:#7f8c8d;font-size:13px;margin-left:5px;}
-        
-        .qty-controls{display:flex;align-items:center;gap:10px;}
-        .btn-qty{width:30px;height:30px;border:none;border-radius:8px;background:#1abc9c;color:white;font-weight:bold;cursor:pointer;}
-        
-        .footer{position:fixed;bottom:0;width:100%;background:white;padding:15px;box-shadow:0 -3px 15px rgba(0,0,0,0.1);box-sizing:border-box;}
-        .footer input{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:1px solid #ddd;box-sizing:border-box;}
-        .footer-btns{display:flex;justify-content:space-between;align-items:center;gap:10px;}
-        .btn-main{flex:1;padding:12px;border:none;border-radius:8px;background:#1abc9c;color:white;font-weight:bold;cursor:pointer;}
+        /* Loading */
+        #loading{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.9);display:none;justify-content:center;align-items:center;z-index:9999;flex-direction:column;gap:10px;font-weight:bold;color:var(--primary);}
 
-        #addMenuPopup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:85%;max-width:350px;background:white;padding:20px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,0.3);display:none;z-index:1000;}
-        #addMenuPopup input, #addMenuPopup select{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ddd;box-sizing:border-box;}
+        /* Menu List */
+        .menu-list{padding:10px 15px;}
+        h4.category{margin:20px 0 8px 0;font-size:18px;color:var(--dark);border-left:4px solid var(--primary);padding-left:10px;}
+        .menu{background:white;margin:10px 0;padding:15px;border-radius:15px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 6px rgba(0,0,0,0.05);transition:.2s;}
+        .menu:active{transform:scale(0.98);}
+        .menu b{display:block;font-size:16px;}
+        .price{color:#7f8c8d;font-size:13px;}
+        
+        /* Qty Controls */
+        .qty-controls{display:flex;align-items:center;gap:12px;background:#f8f9fa;padding:5px 10px;border-radius:10px;}
+        .btn-qty{width:32px;height:32px;border:none;border-radius:8px;background:var(--primary);color:white;font-weight:bold;font-size:18px;cursor:pointer;}
+        .qty-val{min-width:20px;text-align:center;font-weight:bold;font-size:16px;}
+
+        /* Footer */
+        .footer{position:fixed;bottom:0;width:100%;background:white;padding:15px;box-shadow:0 -5px 20px rgba(0,0,0,0.1);box-sizing:border-box;border-radius:20px 20px 0 0;}
+        .footer input{width:100%;padding:12px;margin-bottom:12px;border-radius:10px;border:1.5px solid #eee;box-sizing:border-box;font-size:14px;outline:none;transition:.3s;}
+        .footer input:focus{border-color:var(--primary);}
+        .footer-row{display:flex;justify-content:space-between;align-items:center;}
+        .btn-print{background:var(--primary);color:white;border:none;padding:12px 25px;border-radius:10px;font-weight:bold;cursor:pointer;box-shadow:0 4px 10px rgba(26,188,156,0.3);}
+        .btn-reset{background:#f8f9fa;color:#e74c3c;border:none;padding:12px;border-radius:10px;font-weight:bold;cursor:pointer;margin-right:10px;}
+
+        /* Popup */
+        #addMenuPopup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:85%;max-width:380px;background:white;padding:25px;border-radius:20px;box-shadow:0 15px 50px rgba(0,0,0,0.2);display:none;z-index:1000;}
+        #addMenuPopup input, #addMenuPopup select{width:100%;padding:12px;margin:10px 0;border-radius:10px;border:1px solid #ddd;box-sizing:border-box;}
+
+        @media print { .no-print { display: none; } }
     </style>
 </head>
 <body>
 
-<div id="loading">⏳ Menghubungkan ke Cloud...</div>
+<div id="loading">
+    <div style="width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid var(--primary);border-radius:50%;animation:spin 1s linear infinite;"></div>
+    <span>Sinkronisasi Cloud...</span>
+</div>
 
-<div class="header">Kantin Kampus 2 Mutu</div>
-<div class="gear" onclick="toggleEdit()">⚙️</div>
-<div class="add-btn" onclick="showAddMenuPopup()">➕</div>
+<div class="header">
+    Kantin Kampus 2 Mutu
+    <div class="gear" onclick="toggleEdit()">⚙️</div>
+    <div class="add-btn" onclick="showAddMenuPopup()">➕</div>
+</div>
 
 <div id="menuList" class="menu-list"></div>
 
-<div class="footer">
+<div class="footer no-print">
     <input type="text" id="tableNo" placeholder="No Meja / Nama Pelanggan">
-    <div class="footer-btns">
-        <div style="flex:1">
-            <small style="color:#7f8c8d">Total Bayar:</small>
-            <h3 style="margin:0;color:#2c3e50">Rp <span id="total">0</span></h3>
+    <div class="footer-row">
+        <div>
+            <small style="color:#7f8c8d;display:block">Total Pembayaran:</small>
+            <h2 style="margin:0;color:var(--dark)">Rp <span id="total">0</span></h2>
         </div>
-        <button class="btn-main" onclick="printNota()">PRINT & SIMPAN</button>
-        <button class="btn-main" style="background:#e74c3c;flex:0.3" onclick="resetCart()">Reset</button>
+        <div style="display:flex; align-items:center;">
+            <button class="btn-reset" onclick="resetCart()">Reset</button>
+            <button class="btn-print" onclick="printNota()">PRINT & SIMPAN</button>
+        </div>
     </div>
 </div>
 
 <div id="addMenuPopup">
     <h3 style="margin-top:0">Kelola Menu Cloud</h3>
     <input type="text" id="newMenuName" placeholder="Nama Menu">
-    <input type="number" id="newMenuPrice" placeholder="Harga (Contoh: 5000)">
+    <input type="number" id="newMenuPrice" placeholder="Harga">
     <select id="newMenuCategory">
         <option value="Makanan">Makanan</option>
         <option value="Minuman">Minuman</option>
         <option value="Jajanan">Jajanan</option>
         <option value="Lainnya">Lainnya</option>
     </select>
-    <button onclick="addMenuFromPopup()" style="width:100%;background:#1abc9c;color:white;border:none;padding:12px;border-radius:8px;margin-top:10px;font-weight:bold;">SIMPAN KE GOOGLE SHEET</button>
-    <button onclick="closeAddMenuPopup()" style="width:100%;background:none;border:none;color:#95a5a6;margin-top:10px;cursor:pointer;">Batal</button>
+    <button onclick="addMenuFromPopup()" style="width:100%;background:var(--primary);color:white;border:none;padding:15px;border-radius:10px;margin-top:10px;font-weight:bold;cursor:pointer;">SIMPAN DATA</button>
+    <button onclick="closeAddMenuPopup()" style="width:100%;background:none;border:none;color:#95a5a6;margin-top:10px;cursor:pointer;">Batal / Tutup</button>
 </div>
 
 <script>
+// KONFIGURASI URL GOOGLE APPS SCRIPT
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbynZFIEw6nJqfPPucOvvmQh9rZSmiC6BXgm3xDi8LtknrylxiTwa0QEdtWhAuoHTfXiCg/exec";
 
 let menu = [];
 let editMode = false;
 
-// 1. LOAD DATA DARI GOOGLE SHEET (READ)
+// 1. AMBIL DATA DARI SHEET (READ)
 async function loadData() {
     toggleLoading(true);
     try {
         const response = await fetch(SCRIPT_URL);
         const data = await response.json();
-        // Beri qty: 0 untuk setiap item yang baru ditarik
         menu = data.map(item => ({ ...item, qty: 0 }));
         renderMenu();
-    } catch (error) {
-        console.error(error);
-        alert("Gagal koneksi ke Cloud! Pastikan Apps Script sudah di-deploy sebagai 'Anyone'.");
+    } catch (e) {
+        alert("Gagal koneksi ke database! Cek internet.");
     }
     toggleLoading(false);
 }
 
-// 2. RENDER TAMPILAN
+// 2. TAMPILKAN MENU
 function renderMenu() {
     const categories = ["Makanan", "Minuman", "Jajanan", "Lainnya"];
     let html = "";
@@ -102,47 +121,44 @@ function renderMenu() {
                 const idx = menu.indexOf(m);
                 html += `<div class="menu">
                     <div>
-                        ${editMode ? `<span style="cursor:pointer;margin-right:8px" onclick="deleteMenu(${idx})">🗑️</span>` : ""}
-                        <b>${m.name}</b><br><span class="price">Rp ${parseInt(m.price).toLocaleString()}</span>
+                        ${editMode ? `<span style="cursor:pointer;margin-right:10px;color:#e74c3c" onclick="deleteMenu(${idx})">🗑️</span>` : ""}
+                        <b>${m.name}</b><span class="price">Rp ${parseInt(m.price).toLocaleString('id-ID')}</span>
                     </div>
                     <div class="qty-controls">
                         <button class="btn-qty" onclick="updateQty(${idx},-1)">-</button>
-                        <span style="min-width:20px;text-align:center;font-weight:bold">${m.qty}</span>
+                        <span class="qty-val">${m.qty}</span>
                         <button class="btn-qty" onclick="updateQty(${idx},1)">+</button>
                     </div>
                 </div>`;
             });
         }
     });
-    document.getElementById("menuList").innerHTML = html;
+    document.getElementById("menuList").innerHTML = html || "<center style='margin-top:50px;color:#7f8c8d'>Belum ada menu. Klik ➕ untuk tambah.</center>";
     hitungTotal();
 }
 
-function updateQty(i, n) {
-    if (menu[i].qty + n >= 0) menu[i].qty += n;
-    renderMenu();
+function updateQty(i, n) { if (menu[i].qty + n >= 0) menu[i].qty += n; renderMenu(); }
+function hitungTotal() { 
+    let t = menu.reduce((s, m) => s + (m.qty * m.price), 0);
+    document.getElementById("total").innerText = t.toLocaleString('id-ID');
 }
 
-function hitungTotal() {
-    let total = menu.reduce((sum, item) => sum + (item.qty * item.price), 0);
-    document.getElementById("total").innerText = total.toLocaleString();
-}
-
-// 3. SIMPAN PESANAN KE HISTORY (CREATE)
+// 3. PROSES SIMPAN CLOUD & PRINT CLEAN STRUK
 async function printNota() {
-    const table = document.getElementById("tableNo").value || "Pelanggan Umum";
+    const table = document.getElementById("tableNo").value || "Umum";
     const itemsOrdered = menu.filter(m => m.qty > 0);
     
-    if (itemsOrdered.length === 0) return alert("Pilih menu dulu, Bos!");
+    if (itemsOrdered.length === 0) return alert("Pilih menu dulu!");
 
-    const total = itemsOrdered.reduce((sum, item) => sum + (item.qty * item.price), 0);
-    // Format teks untuk kolom 'items' di Google Sheet agar rapi (Cara 1)
+    const total = itemsOrdered.reduce((s, m) => s + (m.qty * m.price), 0);
     const itemsText = itemsOrdered.map(it => `${it.name} (${it.qty})`).join(", ");
 
     toggleLoading(true);
     try {
+        // Simpan ke Google Sheet
         await fetch(SCRIPT_URL, {
             method: "POST",
+            mode: 'no-cors', // Untuk menghindari masalah CORS saat POST simple
             body: JSON.stringify({
                 action: "saveOrder",
                 table: table,
@@ -151,49 +167,77 @@ async function printNota() {
                 total: total
             })
         });
+
+        toggleLoading(false);
+
+        // Bikin Window Baru Khusus Print Struk
+        const p = window.open('', '', 'width=350,height=600');
+        let struk = `
+            <style>body{font-family:monospace;padding:20px;font-size:12px;}</style>
+            <center>
+                <b style="font-size:14px">KANTIN KAMPUS 2 MUTU</b><br>
+                SMK Muhammadiyah 1 Prambon<br>
+                ---------------------------<br>
+                ${new Date().toLocaleString("id-ID")}<br>
+                Meja: ${table}<br>
+                ---------------------------
+            </center><br>
+        `;
+        itemsOrdered.forEach(i => {
+            struk += `<div style="display:flex;justify-content:space-between">
+                <span>${i.name} x${i.qty}</span>
+                <span>${(i.qty*i.price).toLocaleString()}</span>
+            </div>`;
+        });
+        struk += `
+            <br>---------------------------<br>
+            <div style="display:flex;justify-content:space-between;font-weight:bold">
+                <span>TOTAL</span>
+                <span>Rp ${total.toLocaleString()}</span>
+            </div>
+            <br><center>Terima Kasih!</center>
+        `;
+        p.document.write(struk);
+        p.document.close();
         
-        alert("Pesanan Tersimpan di Cloud!");
-        window.print(); // Cetak nota fisik
-        resetCart();
+        setTimeout(() => { p.print(); p.close(); resetCart(); }, 500);
+
     } catch (e) {
-        alert("Gagal kirim pesanan!");
+        toggleLoading(false);
+        alert("Gagal simpan ke Cloud, tapi struk tetap bisa dicetak.");
     }
-    toggleLoading(false);
 }
 
-// 4. CRUD MENU (UPDATE/DELETE)
+// 4. CRUD MANAJEMEN MENU
 async function syncMenuToCloud() {
     toggleLoading(true);
     try {
-        // Kita kirim data menu tanpa property 'qty'
-        const menuToSync = menu.map(({qty, ...rest}) => rest);
+        const dataSync = menu.map(({qty, ...rest}) => rest);
         await fetch(SCRIPT_URL, {
             method: "POST",
-            body: JSON.stringify({ action: "syncMenu", data: menuToSync })
+            mode: 'no-cors',
+            body: JSON.stringify({ action: "syncMenu", data: dataSync })
         });
-        await loadData(); // Refresh data
-    } catch (e) { alert("Gagal update menu!"); }
-    toggleLoading(false);
+        // Karena no-cors tidak bisa baca response, kita kasih jeda baru reload
+        setTimeout(() => { loadData(); }, 1500);
+    } catch (e) { alert("Error sync menu!"); toggleLoading(false); }
 }
 
 async function addMenuFromPopup() {
     const name = document.getElementById("newMenuName").value;
     const price = parseInt(document.getElementById("newMenuPrice").value);
     const category = document.getElementById("newMenuCategory").value;
-    
     if (name && price) {
         menu.push({ name, price, category });
         await syncMenuToCloud();
         closeAddMenuPopup();
         document.getElementById("newMenuName").value = "";
         document.getElementById("newMenuPrice").value = "";
-    } else {
-        alert("Isi nama dan harga dulu!");
     }
 }
 
 function deleteMenu(i) {
-    if (confirm("Hapus menu " + menu[i].name + " dari Cloud?")) {
+    if (confirm("Hapus permanen " + menu[i].name + "?")) {
         menu.splice(i, 1);
         syncMenuToCloud();
     }
@@ -204,11 +248,14 @@ function toggleEdit() { editMode = !editMode; renderMenu(); }
 function showAddMenuPopup() { document.getElementById("addMenuPopup").style.display = "block"; }
 function closeAddMenuPopup() { document.getElementById("addMenuPopup").style.display = "none"; }
 function resetCart() { menu.forEach(m => m.qty = 0); renderMenu(); }
-function toggleLoading(show) { document.getElementById("loading").style.display = show ? "flex" : "none"; }
+function toggleLoading(s) { document.getElementById("loading").style.display = s ? "flex" : "none"; }
 
-// JALANKAN SAAT START
+// CSS Spin
+const style = document.createElement('style');
+style.innerHTML = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
+document.head.appendChild(style);
+
 loadData();
 </script>
-
 </body>
 </html>
