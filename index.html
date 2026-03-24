@@ -212,19 +212,23 @@ async function showHistory() {
         const res = await fetch(SCRIPT_URL + "?action=readHistory");
         const hData = await res.json();
         el.innerHTML = hData.map(h => `
-            <div class="history-item">
-                <div style="display:flex; justify-content:space-between">
-                    <b>${h.table}</b> 
-                    <button onclick='printNota(${JSON.stringify(h)})' style="border:none;background:var(--primary);color:white;border-radius:6px;padding:5px 10px;cursor:pointer;">🖨️</button>
+            <div class="history-item" style="border-left: 5px solid var(--primary); padding-left: 10px; margin-bottom: 15px; background: #f9f9f9; border-radius: 8px;">
+                <div style="display:flex; justify-content:space-between; align-items: center;">
+                    <b style="color:#2c3e50;">ID: ${h.table || h.id_pesanan}</b> 
+                    <button onclick='printNota(${JSON.stringify(h)})' style="border:none;background:var(--primary);color:white;border-radius:6px;padding:8px 12px;cursor:pointer;font-weight:bold;">🖨️ PRINT</button>
                 </div>
-                <small>${h.datetime}</small><br>
-                <span style="font-size:11px;color:#666">${h.items}</span><br>
-                <b>Rp ${parseInt(h.total).toLocaleString()}</b>
+                <div style="margin-top:5px; font-weight: 800; color: #e67e22;">👤 Pelanggan: ${h.nama || 'Self Service'}</div>
+                <div style="font-size:11px; color:#7f8c8d;">📅 ${h.datetime || h.waktu}</div>
+                <div style="font-size:12px; margin: 5px 0; color: #34495e; border-top: 1px solid #eee; padding-top: 5px;">📦 ${h.items}</div>
+                <div style="display:flex; justify-content:space-between; font-weight:bold; color:var(--dark);">
+                   <span>Total:</span>
+                   <span>Rp ${parseInt(h.total).toLocaleString('id-ID')}</span>
+                </div>
+                <div style="font-size:10px; color: ${h.kategori === 'QRIS' ? '#27ae60' : '#d35400'}; font-weight: bold; margin-top:3px;">💳 ${h.kategori || h.metode}</div>
             </div>
         `).join("") || "Belum ada riwayat.";
-    } catch (e) { el.innerHTML = "Gagal memuat."; }
+    } catch (e) { el.innerHTML = "Gagal memuat data riwayat."; }
 }
-
 async function syncMenu() {
     toggleLoading(true);
     await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "syncMenu", data: menu.map(({qty, ...rest}) => rest) }) });
