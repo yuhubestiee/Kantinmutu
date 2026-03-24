@@ -81,7 +81,7 @@
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwe7AhpgKehwmReVQZpXSoq5aNChEwR4dNLyXkjAU9FfRnBO0zJCCSPa8zlI1XzVA/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVHA7SPg6q5rMuFq4UtD7yVhFczm9yaRrpHEvYh2Te21UPcWcJeAcf9Fk9HWBwSsV2RQ/exec";
 
 let menu = [];
 let editMode = false;
@@ -109,7 +109,7 @@ function renderMenu() {
                 html += `<div class="menu">
                     <div>
                         ${editMode ? `<span onclick="deleteMenu(${idx})" style="cursor:pointer">🗑️</span> <span onclick="editMenu(${idx})" style="margin-left:10px;cursor:pointer">✏️</span> ` : ""}
-                        <b>${m.name}</b><span style="font-size:12px;color:#7f8c8d">Rp ${parseInt(m.price).toLocaleString()}</span>
+                        <b>${m.name}</b><br><span style="font-size:12px;color:#7f8c8d">Rp ${parseInt(m.price).toLocaleString()}</span>
                     </div>
                     <div class="qty-controls">
                         <button class="btn-qty" onclick="updateQty(${idx},-1)">-</button>
@@ -131,21 +131,25 @@ function hitungTotal() {
 }
 
 function printNota(reData = null) {
-    let orderID, itemsTxt, total, printLinesFormatted;
+    let orderID, itemsTxt, total, printLinesFormatted, buyerName, statusText;
     
     if (reData) {
-        orderID = reData.table; 
+        // Data dari Riwayat
+        orderID = reData.table || reData.id_pesanan; 
         itemsTxt = reData.items; 
         total = parseInt(reData.total);
-        printLinesFormatted = itemsTxt.split(", ").map(item => `<div>${item}</div>`);
+        buyerName = reData.nama || "Self Service";
+        statusText = "LUNAS (REPRINT)";
+        printLinesFormatted = itemsTxt.split(", ").map(item => `<div style="margin-bottom:3px;">${item}</div>`);
     } else {
+        // Data Baru (Transaksi Langsung)
         const ordered = menu.filter(m => m.qty > 0);
         if (ordered.length === 0) return alert("Pilih menu dulu!");
         
         const now = new Date();
         const yy = now.getFullYear().toString().slice(-2);
-        const m = now.getMonth() + 1;
-        const dd = now.getDate();
+        const m = (now.getMonth() + 1).toString().padStart(2, '0');
+        const dd = now.getDate().toString().padStart(2, '0');
         const hh = now.getHours().toString().padStart(2,'0');
         const mm = now.getMinutes().toString().padStart(2,'0');
         const ss = now.getSeconds().toString().padStart(2,'0');
@@ -154,6 +158,8 @@ function printNota(reData = null) {
         orderID = `KMU2${yy}${m}${dd}${hh}${mm}${ss}${rand}`;
         total = ordered.reduce((s, m) => s + (m.qty * m.price), 0);
         itemsTxt = ordered.map(it => `${it.name} (${it.qty})`).join(", ");
+        buyerName = "Kasir Langsung";
+        statusText = "LUNAS";
         
         printLinesFormatted = ordered.map(it => `
             <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
@@ -165,34 +171,49 @@ function printNota(reData = null) {
             </div>
         `);
         
+        // Simpan ke Cloud (MENGISI KOLOM A-F)
         fetch(SCRIPT_URL, { 
             method: "POST", 
             mode: 'no-cors',
-            body: JSON.stringify({ action: "saveOrder", table: orderID, datetime: now.toLocaleString("id-ID"), items: itemsTxt, total: total }) 
+            body: JSON.stringify({ 
+                action: "saveOrder", 
+                table: orderID, 
+                datetime: now.toLocaleString("id-ID"), 
+                items: itemsTxt, 
+                total: total,
+                kategori: "Transaksi Kasir", // Masuk Kolom E
+                nama: buyerName               // Masuk Kolom F
+            }) 
         });
     }
 
     const p = window.open('', '', 'width=350,height=600');
     p.document.write(`
         <style>
-            body{font-family:monospace;font-size:12px;padding:15px;line-height:1.4;} 
+            body{font-family:monospace;font-size:12px;padding:15px;line-height:1.4; color:#000;} 
             .center{text-align:center} 
             .flex-between{display:flex;justify-content:space-between}
             hr{border:none; border-top:1px dashed #000; margin:10px 0;}
+            .status-box{border:1px solid #000; padding:5px; margin-top:10px; font-weight:bold; font-size:14px;}
         </style>
         <div class="center">
             <b style="font-size:14px">KANTIN KAMPUS 2 MUTU</b><br>
             SMK Muhammadiyah 1 Prambon<br>
             <hr>
             <b>NO. PESANAN: ${orderID}</b><br>
+            Pelanggan: ${buyerName}<br>
             ${new Date().toLocaleString("id-ID")}<br>
             <hr>
         </div>
-        <div>${printLinesFormatted.join('')}</div>
+        <div>${reData ? printLinesFormatted.join('') : printLinesFormatted.join('')}</div>
         <hr>
         <div class="flex-between" style="font-size:14px"><b>TOTAL</b><b>Rp ${total.toLocaleString()}</b></div>
         <hr>
-        <div class="center">Menuntut ilmu adalah jihad yang pahalanya mengalir hingga akhir hayat</div>
+        <div class="center">
+            <div class="status-box">STATUS: ${statusText}</div>
+            <br>
+            Menuntut ilmu adalah jihad yang pahalanya mengalir hingga akhir hayat
+        </div>
     `);
     
     p.document.close();
@@ -224,11 +245,12 @@ async function showHistory() {
                    <span>Total:</span>
                    <span>Rp ${parseInt(h.total).toLocaleString('id-ID')}</span>
                 </div>
-                <div style="font-size:10px; color: ${h.kategori === 'QRIS' ? '#27ae60' : '#d35400'}; font-weight: bold; margin-top:3px;">💳 ${h.kategori || h.metode}</div>
+                <div style="font-size:10px; color: ${h.kategori === 'QRIS' ? '#27ae60' : '#d35400'}; font-weight: bold; margin-top:3px;">💳 ${h.kategori || 'Tunai'}</div>
             </div>
         `).join("") || "Belum ada riwayat.";
     } catch (e) { el.innerHTML = "Gagal memuat data riwayat."; }
 }
+
 async function syncMenu() {
     toggleLoading(true);
     await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "syncMenu", data: menu.map(({qty, ...rest}) => rest) }) });
