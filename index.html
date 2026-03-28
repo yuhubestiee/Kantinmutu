@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kantin Mutu - Smart System 2026</title>
     <style>
-        :root { --primary: #1abc9c; --dark: #2c3e50; --bg: #f4f7f6; }
+        :root { --primary: #1abc9c; --dark: #2c3e50; --bg: #f4f7f6; --gold: #FFD700; }
         body{font-family:'Segoe UI', sans-serif;margin:0;padding:0;background:var(--bg);padding-bottom:180px;color:var(--dark);}
         
         .header{text-align:center;font-size:20px;font-weight:bold;padding:15px;background:var(--primary);color:white;box-shadow:0 2px 10px rgba(0,0,0,0.1);position:sticky;top:0;z-index:100;}
@@ -19,12 +19,12 @@
         .menu{background:white;margin:10px 0;padding:15px;border-radius:15px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 5px rgba(0,0,0,0.05);}
         
         .qty-controls{display:flex;align-items:center;gap:10px;}
-        .btn-qty{width:30px;height:30px;border:none;border-radius:8px;background:var(--primary);color:white;font-weight:bold;cursor:pointer;}
+        .btn-qty{width:35px;height:35px;border:none;border-radius:8px;background:var(--primary);color:white;font-weight:bold;cursor:pointer;}
         
         .footer{position:fixed;bottom:0;width:100%;background:white;padding:20px;box-shadow:0 -5px 20px rgba(0,0,0,0.1);box-sizing:border-box;border-radius:20px 20px 0 0;}
         .footer-row{display:flex;justify-content:space-between;align-items:center;gap:10px;}
         
-        .modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:400px;background:white;padding:20px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,0.3);display:none;z-index:1000;max-height:80vh;overflow-y:auto;}
+        .modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:400px;background:white;padding:25px;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,0.3);display:none;z-index:1000;max-height:80vh;overflow-y:auto;}
         .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:1px solid #eee;padding-bottom:10px;}
         .close-x{background:#e74c3c;color:white;border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;}
         
@@ -39,13 +39,13 @@
 
 <div id="loading">
     <div style="width:35px;height:35px;border:4px solid #eee;border-top:4px solid var(--primary);border-radius:50%;animation:spin 1s linear infinite;"></div>
-    <span>Sinkronisasi Menu...</span>
+    <span>Sinkronisasi Data...</span>
 </div>
 
 <div class="header">
-    Kantin Kampus 2 Mutu
-    <div class="gear" onclick="toggleEdit()">⚙️</div>
-    <div class="add-btn" onclick="showAddMenuPopup()">➕</div>
+    Admin Kantin Mutu
+    <div class="gear" onclick="toggleEdit()" title="Mode Edit">⚙️</div>
+    <div class="add-btn" onclick="showAddMenuPopup()" title="Tambah Menu">➕</div>
 </div>
 
 <div id="menuList" class="menu-list"></div>
@@ -53,45 +53,55 @@
 <div class="footer">
     <div class="footer-row">
         <div style="flex:1">
-            <small style="color:#7f8c8d">Total Bayar:</small>
+            <small style="color:#7f8c8d">Kasir Langsung:</small>
             <h2 style="margin:0; font-size: 22px; color:var(--dark)">Rp <span id="total">0</span></h2>
         </div>
         <button class="btn-sec" onclick="showHistory()" title="Riwayat">📜</button>
-        <button class="btn-main" onclick="printNota()">BAYAR & PRINT</button>
+        <button class="btn-main" onclick="printNota()">PRINT NOTA</button>
         <button class="btn-sec" style="color:red" onclick="resetCart()">🗑️</button>
     </div>
 </div>
 
 <div id="addMenuPopup" class="modal">
-    <div class="modal-header"><h3>Kelola Menu</h3><button class="close-x" onclick="closePopup('addMenuPopup')">X</button></div>
-    <input type="text" id="newMenuName" placeholder="Nama Menu" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ddd;border-radius:8px;">
-    <input type="number" id="newMenuPrice" placeholder="Harga" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ddd;border-radius:8px;">
-    <select id="newMenuCategory" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd;">
+    <div class="modal-header"><h3 id="popupTitle">Kelola Menu</h3><button class="close-x" onclick="closePopup('addMenuPopup')">X</button></div>
+    <input type="text" id="newMenuName" placeholder="Nama Menu (Contoh: Nasi Goreng)" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #ddd;border-radius:8px;">
+    <input type="number" id="newMenuPrice" placeholder="Harga (Contoh: 10000)" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #ddd;border-radius:8px;">
+    <input type="text" id="newMenuImg" placeholder="Link Gambar (Opsional)" style="width:100%;padding:12px;margin-bottom:10px;border:1px solid #ddd;border-radius:8px;">
+    <select id="newMenuCategory" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd;">
         <option value="Makanan">Makanan</option>
         <option value="Minuman">Minuman</option>
         <option value="Jajanan">Jajanan</option>
         <option value="Lainnya">Lainnya</option>
     </select>
-    <button onclick="addMenuFromPopup()" class="btn-main" style="width:100%">SIMPAN KE CLOUD</button>
+    <button id="btnSaveMenu" onclick="saveMenuToCloud()" class="btn-main" style="width:100%">SIMPAN KE CLOUD</button>
 </div>
 
 <div id="historyPopup" class="modal">
-    <div class="modal-header"><h3>Riwayat Pesanan</h3><button class="close-x" onclick="closePopup('historyPopup')">X</button></div>
+    <div class="modal-header"><h3>Riwayat Hari Ini</h3><button class="close-x" onclick="closePopup('historyPopup')">X</button></div>
     <div id="historyList">Memuat...</div>
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVHA7SPg6q5rMuFq4UtD7yVhFczm9yaRrpHEvYh2Te21UPcWcJeAcf9Fk9HWBwSsV2RQ/exec";
+// URL SCRIPT BARU LU
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGUEqvDp-EwGxFMANxT2Yv9vRrRXgLUwS05M9ld7mnEKcESBZa_EFbP1fYsBzSQwl-2g/exec";
 
 let menu = [];
 let editMode = false;
+let currentEditIdx = null;
 
 async function loadData() {
     toggleLoading(true);
     try {
-        const res = await fetch(SCRIPT_URL);
+        const res = await fetch(`${SCRIPT_URL}?action=getMenu`);
         const data = await res.json();
-        menu = data.map(m => ({ ...m, qty: 0 }));
+        // Pastikan format data sinkron dengan database (name, price, category, imgurl)
+        menu = data.map(m => ({ 
+            name: m.name || "Tanpa Nama", 
+            price: parseInt(m.price) || 0, 
+            category: m.category || "Lainnya", 
+            imgurl: m.imgurl || "",
+            qty: 0 
+        }));
         renderMenu();
     } catch (e) { alert("Gagal koneksi Cloud!"); }
     toggleLoading(false);
@@ -107,13 +117,13 @@ function renderMenu() {
             items.forEach((m) => {
                 const idx = menu.indexOf(m);
                 html += `<div class="menu">
-                    <div>
-                        ${editMode ? `<span onclick="deleteMenu(${idx})" style="cursor:pointer">🗑️</span> <span onclick="editMenu(${idx})" style="margin-left:10px;cursor:pointer">✏️</span> ` : ""}
-                        <b>${m.name}</b><br><span style="font-size:12px;color:#7f8c8d">Rp ${parseInt(m.price).toLocaleString()}</span>
+                    <div style="flex:1">
+                        ${editMode ? `<span onclick="deleteMenu(${idx})" style="cursor:pointer;margin-right:10px;">🗑️</span> <span onclick="editMenu(${idx})" style="cursor:pointer;margin-right:10px;">✏️</span> ` : ""}
+                        <b>${m.name}</b><br><span style="font-size:12px;color:#7f8c8d">Rp ${m.price.toLocaleString('id-ID')}</span>
                     </div>
                     <div class="qty-controls">
                         <button class="btn-qty" onclick="updateQty(${idx},-1)">-</button>
-                        <span style="font-weight:bold">${m.qty}</span>
+                        <span style="font-weight:bold; min-width:20px; text-align:center">${m.qty}</span>
                         <button class="btn-qty" onclick="updateQty(${idx},1)">+</button>
                     </div>
                 </div>`;
@@ -131,98 +141,51 @@ function hitungTotal() {
 }
 
 function printNota(reData = null) {
-    let orderID, itemsTxt, total, printLinesFormatted, buyerName, statusText;
+    let orderID, itemsTxt, total, buyerName, statusText, displayItems = [];
     
     if (reData) {
-        // Data dari Riwayat
-        orderID = reData.table || reData.id_pesanan; 
-        itemsTxt = reData.items; 
+        orderID = reData.table || "REPRINT";
+        itemsTxt = reData.items;
         total = parseInt(reData.total);
-        buyerName = reData.nama || "Self Service";
+        buyerName = reData.nama || "Pelanggan";
         statusText = "LUNAS (REPRINT)";
-        printLinesFormatted = itemsTxt.split(", ").map(item => `<div style="margin-bottom:3px;">${item}</div>`);
+        displayItems = itemsTxt.split(", ").map(it => `<div>${it}</div>`);
     } else {
-        // Data Baru (Transaksi Langsung)
         const ordered = menu.filter(m => m.qty > 0);
         if (ordered.length === 0) return alert("Pilih menu dulu!");
         
         const now = new Date();
-        const yy = now.getFullYear().toString().slice(-2);
-        const m = (now.getMonth() + 1).toString().padStart(2, '0');
-        const dd = now.getDate().toString().padStart(2, '0');
-        const hh = now.getHours().toString().padStart(2,'0');
-        const mm = now.getMinutes().toString().padStart(2,'0');
-        const ss = now.getSeconds().toString().padStart(2,'0');
-        const rand = Math.floor(Math.random() * 90) + 10; 
-        
-        orderID = `KMU2${yy}${m}${dd}${hh}${mm}${ss}${rand}`;
+        orderID = `KASIR${now.getTime().toString().slice(-6)}`;
         total = ordered.reduce((s, m) => s + (m.qty * m.price), 0);
-        itemsTxt = ordered.map(it => `${it.name} (${it.qty})`).join(", ");
-        buyerName = "Kasir Langsung";
+        itemsTxt = ordered.map(it => `${it.name} (x${it.qty})`).join(", ");
+        buyerName = "Pembelian Langsung";
         statusText = "LUNAS";
         
-        printLinesFormatted = ordered.map(it => `
-            <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-                <span>${it.name}</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:11px; color:#333; margin-bottom:5px;">
-                <span>&nbsp;&nbsp;${it.qty} x ${parseInt(it.price).toLocaleString()}</span>
-                <span>Rp ${(it.qty * it.price).toLocaleString()}</span>
+        displayItems = ordered.map(it => `
+            <div style="display:flex; justify-content:space-between;">
+                <span>${it.name} x${it.qty}</span>
+                <span>${(it.qty * it.price).toLocaleString()}</span>
             </div>
         `);
-        
-        // Simpan ke Cloud (MENGISI KOLOM A-F)
+
+        // Simpan ke History Sheet
         fetch(SCRIPT_URL, { 
-            method: "POST", 
-            mode: 'no-cors',
-            body: JSON.stringify({ 
-                action: "saveOrder", 
-                table: orderID, 
-                datetime: now.toLocaleString("id-ID"), 
-                items: itemsTxt, 
-                total: total,
-                kategori: "Transaksi Kasir", // Masuk Kolom E
-                nama: buyerName               // Masuk Kolom F
-            }) 
+            method: "POST", mode: 'no-cors',
+            body: JSON.stringify({ action: "saveOrder", table: orderID, datetime: now.toLocaleString("id-ID"), items: itemsTxt, total: total, kategori: "TUNAI", nama: buyerName }) 
         });
     }
 
     const p = window.open('', '', 'width=350,height=600');
     p.document.write(`
-        <style>
-            body{font-family:monospace;font-size:12px;padding:15px;line-height:1.4; color:#000;} 
-            .center{text-align:center} 
-            .flex-between{display:flex;justify-content:space-between}
-            hr{border:none; border-top:1px dashed #000; margin:10px 0;}
-            .status-box{border:1px solid #000; padding:5px; margin-top:10px; font-weight:bold; font-size:14px;}
-        </style>
-        <div class="center">
-            <b style="font-size:14px">KANTIN KAMPUS 2 MUTU</b><br>
-            SMK Muhammadiyah 1 Prambon<br>
-            <hr>
-            <b>NO. PESANAN: ${orderID}</b><br>
-            Pelanggan: ${buyerName}<br>
-            ${new Date().toLocaleString("id-ID")}<br>
-            <hr>
-        </div>
-        <div>${reData ? printLinesFormatted.join('') : printLinesFormatted.join('')}</div>
-        <hr>
-        <div class="flex-between" style="font-size:14px"><b>TOTAL</b><b>Rp ${total.toLocaleString()}</b></div>
-        <hr>
-        <div class="center">
-            <div class="status-box">STATUS: ${statusText}</div>
-            <br>
-            Menuntut ilmu adalah jihad yang pahalanya mengalir hingga akhir hayat
-        </div>
+        <style>body{font-family:monospace;padding:10px;font-size:12px;} .center{text-align:center} hr{border:none;border-top:1px dashed #000;}</style>
+        <div class="center"><b>KANTIN MUTU</b><br>SMK MUH 1 PRAMBON<hr></div>
+        <div>ID: ${orderID}<br>Tgl: ${new Date().toLocaleString("id-ID")}<hr></div>
+        ${displayItems.join('')}
+        <hr><div style="display:flex;justify-content:space-between"><b>TOTAL</b><b>Rp ${total.toLocaleString()}</b></div><hr>
+        <div class="center"><br>STATUS: ${statusText}<br><br>Terima Kasih</div>
     `);
-    
     p.document.close();
-    setTimeout(() => {
-        p.focus();
-        p.print();
-        p.close();
-        if(!reData) resetCart();
-    }, 250);
+    setTimeout(() => { p.print(); p.close(); if(!reData) resetCart(); }, 250);
 }
 
 async function showHistory() {
@@ -230,51 +193,79 @@ async function showHistory() {
     const el = document.getElementById("historyList");
     el.innerHTML = "⏳ Menarik data...";
     try {
-        const res = await fetch(SCRIPT_URL + "?action=readHistory");
+        const res = await fetch(`${SCRIPT_URL}?action=getHistory`); // Pastikan di Kode.gs ada action getHistory
         const hData = await res.json();
-        el.innerHTML = hData.map(h => `
-            <div class="history-item" style="border-left: 5px solid var(--primary); padding-left: 10px; margin-bottom: 15px; background: #f9f9f9; border-radius: 8px;">
-                <div style="display:flex; justify-content:space-between; align-items: center;">
-                    <b style="color:#2c3e50;">ID: ${h.table || h.id_pesanan}</b> 
-                    <button onclick='printNota(${JSON.stringify(h)})' style="border:none;background:var(--primary);color:white;border-radius:6px;padding:8px 12px;cursor:pointer;font-weight:bold;">🖨️ PRINT</button>
-                </div>
-                <div style="margin-top:5px; font-weight: 800; color: #e67e22;">👤 Pelanggan: ${h.nama || 'Self Service'}</div>
-                <div style="font-size:11px; color:#7f8c8d;">📅 ${h.datetime || h.waktu}</div>
-                <div style="font-size:12px; margin: 5px 0; color: #34495e; border-top: 1px solid #eee; padding-top: 5px;">📦 ${h.items}</div>
-                <div style="display:flex; justify-content:space-between; font-weight:bold; color:var(--dark);">
-                   <span>Total:</span>
-                   <span>Rp ${parseInt(h.total).toLocaleString('id-ID')}</span>
-                </div>
-                <div style="font-size:10px; color: ${h.kategori === 'QRIS' ? '#27ae60' : '#d35400'}; font-weight: bold; margin-top:3px;">💳 ${h.kategori || 'Tunai'}</div>
+        el.innerHTML = hData.reverse().slice(0, 20).map(h => `
+            <div class="history-item">
+                <div style="display:flex;justify-content:space-between"><b>${h.nama}</b> <button onclick='printNota(${JSON.stringify(h)})'>🖨️</button></div>
+                <div style="font-size:11px">${h.items}</div>
+                <div style="font-size:12px;font-weight:bold">Rp ${parseInt(h.total).toLocaleString()} (${h.kategori})</div>
             </div>
-        `).join("") || "Belum ada riwayat.";
-    } catch (e) { el.innerHTML = "Gagal memuat data riwayat."; }
+        `).join("") || "Belum ada riwayat hari ini.";
+    } catch (e) { el.innerHTML = "Gagal memuat riwayat."; }
 }
 
-async function syncMenu() {
+async function saveMenuToCloud() {
+    const name = document.getElementById("newMenuName").value;
+    const price = parseInt(document.getElementById("newMenuPrice").value);
+    const cat = document.getElementById("newMenuCategory").value;
+    const img = document.getElementById("newMenuImg").value;
+
+    if (!name || !price) return alert("Nama & Harga wajib diisi!");
+
     toggleLoading(true);
-    await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "syncMenu", data: menu.map(({qty, ...rest}) => rest) }) });
-    loadData();
+    
+    // Logika: Update array menu lokal dulu
+    if (currentEditIdx !== null) {
+        menu[currentEditIdx] = { name, price, category: cat, imgurl: img, qty: 0 };
+    } else {
+        menu.push({ name, price, category: cat, imgurl: img, qty: 0 });
+    }
+
+    // Kirim seluruh array menu ke cloud untuk di-sync (Action: syncMenu)
+    try {
+        await fetch(SCRIPT_URL, { 
+            method: "POST", 
+            mode: 'no-cors',
+            body: JSON.stringify({ action: "syncMenu", data: menu.map(({qty, ...rest}) => rest) }) 
+        });
+        setTimeout(loadData, 1000); // Reload data setelah 1 detik
+        closePopup('addMenuPopup');
+    } catch (e) { alert("Gagal Simpan!"); toggleLoading(false); }
 }
 
 function editMenu(i) {
-    let n = prompt("Nama baru:", menu[i].name);
-    let p = prompt("Harga baru:", menu[i].price);
-    if (n && p) { menu[i].name = n; menu[i].price = parseInt(p); syncMenu(); }
+    currentEditIdx = i;
+    document.getElementById("popupTitle").innerText = "Edit Menu";
+    document.getElementById("newMenuName").value = menu[i].name;
+    document.getElementById("newMenuPrice").value = menu[i].price;
+    document.getElementById("newMenuCategory").value = menu[i].category;
+    document.getElementById("newMenuImg").value = menu[i].imgurl || "";
+    showAddMenuPopup();
 }
 
-function deleteMenu(i) { if (confirm("Hapus " + menu[i].name + "?")) { menu.splice(i, 1); syncMenu(); } }
+function deleteMenu(i) {
+    if (confirm(`Hapus ${menu[i].name}?`)) {
+        menu.splice(i, 1);
+        saveMenuToCloud();
+    }
+}
 
-async function addMenuFromPopup() {
-    const name = document.getElementById("newMenuName").value;
-    const price = document.getElementById("newMenuPrice").value;
-    const cat = document.getElementById("newMenuCategory").value;
-    if (name && price) { menu.push({ name, price: parseInt(price), category: cat }); await syncMenu(); closePopup('addMenuPopup'); }
+function showAddMenuPopup() { 
+    if(currentEditIdx === null) {
+        document.getElementById("popupTitle").innerText = "Tambah Menu Baru";
+        document.getElementById("newMenuName").value = "";
+        document.getElementById("newMenuPrice").value = "";
+        document.getElementById("newMenuImg").value = "";
+    }
+    document.getElementById("addMenuPopup").style.display = "block"; 
 }
 
 function toggleEdit() { editMode = !editMode; renderMenu(); }
-function showAddMenuPopup() { document.getElementById("addMenuPopup").style.display = "block"; }
-function closePopup(id) { document.getElementById(id).style.display = "none"; }
+function closePopup(id) { 
+    document.getElementById(id).style.display = "none"; 
+    currentEditIdx = null; 
+}
 function resetCart() { menu.forEach(m => m.qty = 0); renderMenu(); }
 function toggleLoading(s) { document.getElementById("loading").style.display = s ? "flex" : "none"; }
 
